@@ -1,35 +1,39 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:tetris/game/rotation.dart';
 import 'package:tetris/game/vector.dart';
 
-Piece get nextPiece {
-  final index = Random().nextInt(_pieces.length);
-  return Piece(
-    center: _center[index],
-    color: _colors[index],
-    tiles: _pieces[index],
-    wallKicks: _wallKicks[index],
-  );
+/// https://harddrop.com/wiki/Random_Generator
+List<Piece> get nextPieceBag {
+  return _tiles
+      .mapIndexed((index, element) => Piece(
+            center: _center[index],
+            color: _colors[index],
+            tiles: element,
+            kicks: _kicks[index],
+          ))
+      .toList()
+    ..shuffle(); // 7! permutations (5040)
 }
 
 class Piece {
   final Vector center;
   final Color color;
   final List<Vector> tiles = [];
-  final Map<String, List<Vector>> wallKicks;
+  final Map<String, List<Vector>> kicks;
 
   Rotation rotation = Rotation.zero;
 
   Piece.empty()
       : center = Vector.zero,
         color = const Color(0xFF000000),
-        wallKicks = {};
+        kicks = {};
 
   Piece({
     required this.color,
-    required this.wallKicks,
+    required this.kicks,
     required this.center,
     required List<List<int>> tiles,
   }) {
@@ -63,14 +67,18 @@ class Piece {
 
   List<Vector> getKicks({required Rotation from, bool clockwise = true}) {
     final Rotation to = _nextRotation(from, clockwise);
-    return wallKicks.isNotEmpty ? wallKicks['$from$to']! : [];
+    return kicks.isNotEmpty ? kicks['$from$to']! : [];
   }
 
   Rotation _nextRotation(Rotation rotation, bool clockwise) => Rotation
       .values[(rotation.index + (clockwise ? 1 : -1)) % Rotation.values.length];
+
+  int get width => tiles.reduce((a, b) => a.x > b.x ? a : b).x + 1;
+
+  int get height => tiles.reduce((a, b) => a.y > b.y ? a : b).y + 1;
 }
 
-const _pieces = [
+const _tiles = [
   [
     [1, 1, 1, 1]
   ],
@@ -121,7 +129,7 @@ const _center = [
 ];
 
 /// https://harddrop.com/wiki/SRS#Wall_Kicks
-const _wallKicks = [
+const _kicks = [
   _iWallKicks,
   _oWallKicks,
   _jlstzWallKicks,
