@@ -74,10 +74,9 @@ class Board extends ChangeNotifier {
     startMoveTimer();
   }
 
-  bool isOccupied(i) => _blocked.contains(_tileVectorFromIndex(i));
+  bool isOccupied(v) => _blocked.contains(v);
 
-  bool isCurrentPieceTile(i) =>
-      currentPiece.tiles.contains(_tileVectorFromIndex(i) - _cursor);
+  bool isCurrentPieceTile(v) => currentPiece.tiles.contains(v - _cursor);
 
   bool isFree({Vector offset = Vector.zero}) => currentPiece.tiles
       .where((v) => _blocked.contains(v + _cursor + offset))
@@ -201,12 +200,12 @@ class Board extends ChangeNotifier {
     notifyListeners();
   }
 
-  Color getTileColor(int i) {
-    return isOccupied(i)
+  Color getTileColor(Vector vector) {
+    return isOccupied(vector)
         ? Colors.grey
-        : isCurrentPieceTile(i)
-        ? currentPiece.color
-        : Colors.black;
+        : isCurrentPieceTile(vector)
+            ? currentPiece.color
+            : Colors.black;
   }
 
   static List<Vector> getPredefinedBlockedTiles() {
@@ -310,5 +309,4 @@ class Board extends ChangeNotifier {
     }
     return KeyEventResult.handled;
   }
-
 }

@@ -1,44 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tetris/game/model/board.dart';
+import 'package:tetris/game/model/vector.dart';
 
 class BoardWidget extends StatelessWidget {
   const BoardWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final dividerColor = Theme.of(context).dividerColor;
-    final dividerThickness = Theme.of(context).dividerTheme.thickness!;
-    return AspectRatio(
-      aspectRatio: Board.x / Board.y,
-      child: RepaintBoundary(
-        child: Center(
-          child: Container(
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final dividerColor = Theme.of(context).dividerColor;
+          final thickness = Theme.of(context).dividerTheme.thickness!;
+          final tile = (constraints.maxWidth - thickness) / Board.x - thickness;
+          return Container(
             decoration: BoxDecoration(
               color: dividerColor,
               border: Border.all(
                 color: dividerColor,
-                width: dividerThickness,
+                width: thickness,
               ),
-              borderRadius: BorderRadius.circular(dividerThickness),
+              borderRadius: BorderRadius.circular(thickness),
             ),
-            child: GridView.count(
-              primary: false,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: Board.x,
-              mainAxisSpacing: dividerThickness,
-              crossAxisSpacing: dividerThickness,
+            child: Wrap(
+              direction: Axis.vertical,
+              spacing: thickness,
               children: List.generate(
-                Board.x * Board.y,
-                (i) => Container(
-                  color: context.watch<Board>().getTileColor(i),
+                Board.y,
+                (y) => Wrap(
+                  direction: Axis.horizontal,
+                  spacing: thickness,
+                  children: List.generate(
+                    Board.x,
+                    (x) => Container(
+                      height: tile,
+                      width: tile,
+                      color: context.watch<Board>().getTileColor(Vector(x, y)),
+                    ),
+                  ),
                 ),
-              ),
+              ).reversed.toList(),
             ),
-          ),
-        ),
-      ),
-    );
-  }
+          );
+        },
+      );
 }
