@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tetris/game/board.dart';
 import 'package:tetris/game/level.dart';
+import 'package:tetris/game/piece.dart';
 import 'package:tetris/game/vector.dart';
 
 class Tetris extends StatefulWidget {
@@ -14,23 +15,24 @@ class Tetris extends StatefulWidget {
 }
 
 class _TetrisState extends State<Tetris> {
+  static const Duration lockDelayTime = Duration(seconds: 1);
   static const double gridDividerThickness = 2;
   static const Color gridDividerColor = Color(0xFF2F2F2F);
+  static const double panelRowSpacing = 50.0;
 
   static const int x = 10;
   static const int y = 2 * x;
   Board board = Board(x, y);
 
   Timer? timer;
-  static const Duration operable = Duration(seconds: 1);
   DateTime lockDelay = DateTime.now();
 
   @override
   void initState() {
     timer = Timer.periodic(getLevel(board.clearedRows).speed, (Timer timer) {
-      if (board.isGameOver()) {
+      if (board.isBlockOut()) {
         board.start();
-      } else if (!move(const Vector(0, -1)) && !isLocked()) {
+      } else if (!move(const Vector(0, -1)) && isLockDelayExpired()) {
         board.merge();
         board.clearRows();
         board.spawn();
@@ -68,41 +70,39 @@ class _TetrisState extends State<Tetris> {
                         children: [
                           const Text('LEVEL'),
                           Text('${getLevel(board.clearedRows).id}'),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: panelRowSpacing),
                           const Text('LINE'),
                           Text('${board.clearedRows}'),
                         ],
                       ),
                     ),
                     Expanded(
-                      flex: 2,
-                      child: Center(
-                        child: AspectRatio(
-                          aspectRatio: x / y,
-                          child: Container(
-                            decoration: BoxDecoration(
+                      flex: 3,
+                      child: AspectRatio(
+                        aspectRatio: x / y,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: gridDividerColor,
+                            border: Border.all(
                               color: gridDividerColor,
-                              border: Border.all(
-                                color: gridDividerColor,
-                                width: gridDividerThickness,
-                              ),
-                              borderRadius:
-                                  BorderRadius.circular(gridDividerThickness),
+                              width: gridDividerThickness,
                             ),
-                            child: GridView.count(
-                              primary: false,
-                              crossAxisCount: x,
-                              mainAxisSpacing: gridDividerThickness,
-                              crossAxisSpacing: gridDividerThickness,
-                              children: List.generate(
-                                x * y,
-                                (i) => Container(
-                                  color: board.isOccupied(index: i)
-                                      ? Colors.grey
-                                      : board.isCurrentPieceTile(i)
-                                          ? board.currentPiece.color
-                                          : Colors.black,
-                                ),
+                            borderRadius:
+                                BorderRadius.circular(gridDividerThickness),
+                          ),
+                          child: GridView.count(
+                            primary: false,
+                            crossAxisCount: x,
+                            mainAxisSpacing: gridDividerThickness,
+                            crossAxisSpacing: gridDividerThickness,
+                            children: List.generate(
+                              x * y,
+                              (i) => Container(
+                                color: board.isOccupied(index: i)
+                                    ? Colors.grey
+                                    : board.isCurrentPieceTile(i)
+                                        ? board.currentPiece.color
+                                        : Colors.black,
                               ),
                             ),
                           ),
@@ -114,7 +114,14 @@ class _TetrisState extends State<Tetris> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
-                        children: const [],
+                        children: List.generate(
+                            board.nextPieces.length,
+                            (index) => Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: panelRowSpacing),
+                                  child: PreviewWidget(
+                                      piece: board.nextPieces[index]),
+                                )),
                       ),
                     ),
                   ],
@@ -125,7 +132,8 @@ class _TetrisState extends State<Tetris> {
         ),
       );
 
-  bool isLocked() => lockDelay.compareTo(DateTime.now().subtract(operable)) >= 0;
+  bool isLockDelayExpired() =>
+      lockDelay.compareTo(DateTime.now().subtract(lockDelayTime)) < 0;
 
   bool move(Vector vector) {
     bool hasMoved = false;
@@ -138,7 +146,7 @@ class _TetrisState extends State<Tetris> {
   void moveToFloor() {
     setState(() {
       while (board.move(const Vector(0, -1))) {}
-      lockDelay = DateTime.now().subtract(operable);
+      lockDelay = DateTime.now().subtract(lockDelayTime);
     });
   }
 
@@ -184,4 +192,36 @@ class _TetrisState extends State<Tetris> {
       }
     }
   }
+}
+
+class PreviewWidget extends StatelessWidget {
+  final Piece piece;
+
+  const PreviewWidget({super.key, required this.piece});
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) => Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: List.generate(
+            piece.height,
+            (y) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: List.generate(
+                piece.width,
+                (x) => Container(
+                    height: constraints.maxWidth / 6,
+                    width: constraints.maxWidth / 6,
+                    color: piece.tiles
+                            .where((element) => element == Vector(x, y))
+                            .isEmpty
+                        ? Colors.transparent
+                        : piece.color),
+              ),
+            ),
+          ),
+        ),
+      );
 }

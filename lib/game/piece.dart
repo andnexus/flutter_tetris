@@ -68,6 +68,10 @@ class Piece {
 
   Rotation _nextRotation(Rotation rotation, bool clockwise) => Rotation
       .values[(rotation.index + (clockwise ? 1 : -1)) % Rotation.values.length];
+
+  int get width => tiles.reduce((a, b) => a.x > b.x ? a : b).x + 1;
+
+  int get height => tiles.reduce((a, b) => a.y > b.y ? a : b).y + 1;
 }
 
 const _pieces = [

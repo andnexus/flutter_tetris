@@ -10,6 +10,8 @@ class Board {
 
   Piece currentPiece;
 
+  List<Piece> nextPieces = List.filled(3, nextPiece, growable: true);
+
   Vector _cursor;
 
   int _clearedRows = 0;
@@ -73,7 +75,9 @@ class Board {
   }
 
   void spawn() {
-    currentPiece = nextPiece;
+    currentPiece = nextPieces[0];
+    nextPieces.removeAt(0);
+    nextPieces.add(nextPiece);
     _cursor = currentPiece.spawnOffset(x, y);
   }
 
@@ -110,7 +114,7 @@ class Board {
     _clearedRows = 0;
   }
 
-  bool isGameOver() => _occupied.where((e) => e.y == y - 1).isNotEmpty;
+  bool isBlockOut() => _occupied.where((e) => e.y == y - 1).isNotEmpty;
 
   Vector _tileVectorFromIndex({required int index}) {
     final xp = index % x;
