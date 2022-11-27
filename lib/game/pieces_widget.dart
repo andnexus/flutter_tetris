@@ -4,12 +4,9 @@ import 'package:tetris/game/model/vector.dart';
 
 class PiecesWidget extends StatelessWidget {
   final List<Piece> pieces;
-  final int count;
-
   const PiecesWidget({
     super.key,
     required this.pieces,
-    required this.count,
   });
 
   @override
@@ -41,7 +38,7 @@ class PiecesWidget extends StatelessWidget {
           ),
           separatorBuilder: (BuildContext context, int index) =>
               SizedBox(height: constraints.maxHeight / 20),
-          itemCount: count,
+          itemCount: pieces.length,
         ),
       );
 }

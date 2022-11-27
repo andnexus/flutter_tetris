@@ -25,7 +25,7 @@ class TetrisWidget extends StatelessWidget {
                   child: context.select<Board, Piece?>(
                               (value) => value.holdPiece) !=
                           null
-                      ? PiecesWidget(count: 1, pieces: [
+                      ? PiecesWidget(pieces: [
                           context
                               .select<Board, Piece>((value) => value.holdPiece!)
                         ])
@@ -39,10 +39,11 @@ class TetrisWidget extends StatelessWidget {
                 ),
                 Expanded(
                   flex: 1,
-                  child: PiecesWidget(
-                      count: 3,
-                      pieces: context.select<Board, List<Piece>>(
-                          (value) => value.nextPieces)),
+                  child: PiecesWidget(pieces: [
+                    context.select<Board, Piece>((value) => value.nextPieces[0]),
+                    context.select<Board, Piece>((value) => value.nextPieces[1]),
+                    context.select<Board, Piece>((value) => value.nextPieces[2])
+                  ]),
                 ),
               ],
             ),

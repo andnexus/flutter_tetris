@@ -22,7 +22,9 @@ class Board extends ChangeNotifier {
 
   Piece? holdPiece;
 
-  List<Piece> nextPieces = [];
+  final List<Piece> _nextPieces = [];
+
+  List<Piece> get nextPieces => _nextPieces;
 
   Vector _cursor;
 
@@ -127,11 +129,11 @@ class Board extends ChangeNotifier {
   }
 
   void spawn() {
-    if (nextPieces.length <= 3) {
-      nextPieces.addAll(nextPieceBag);
+    if (_nextPieces.length <= 3) {
+      _nextPieces.addAll(nextPieceBag);
     }
-    currentPiece = nextPieces[0];
-    nextPieces.removeAt(0);
+    currentPiece = _nextPieces[0];
+    _nextPieces.removeAt(0);
     _cursor = currentPiece.spawnOffset(x, y);
     _notify();
   }
@@ -301,7 +303,7 @@ class Board extends ChangeNotifier {
       } else if (event.logicalKey == LogicalKeyboardKey.space) {
         moveToFloor();
       } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-        nextPieces.clear();
+        _nextPieces.clear();
         moveTimer?.cancel();
         startGame();
       }
