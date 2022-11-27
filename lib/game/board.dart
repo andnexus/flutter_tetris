@@ -6,11 +6,13 @@ import 'package:tetris/game/vector.dart';
 class Board {
   final int x;
   final int y;
-  final List<Vector> _occupied;
+  final List<Vector> _blocked;
 
   Piece currentPiece;
 
-  List<Piece> nextPieces = List.filled(3, nextPiece, growable: true);
+  Piece? holdPiece;
+
+  List<Piece> nextPieces = [];
 
   Vector _cursor;
 
@@ -20,19 +22,18 @@ class Board {
 
   Board(this.x, this.y)
       : currentPiece = Piece.empty(),
-        _occupied = [],
+        _blocked = [],
         _cursor = Vector.zero {
     start();
   }
 
-  bool isOccupied({required int index}) =>
-      _occupied.contains(_tileVectorFromIndex(index: index));
+  bool isOccupied(i) => _blocked.contains(_tileVectorFromIndex(i));
 
-  bool isCurrentPieceTile(int index) =>
-      currentPiece.tiles.contains(_tileVectorFromIndex(index: index) - _cursor);
+  bool isCurrentPieceTile(i) =>
+      currentPiece.tiles.contains(_tileVectorFromIndex(i) - _cursor);
 
   bool isFree({Vector offset = Vector.zero}) => currentPiece.tiles
-      .where((v) => _occupied.contains(v + _cursor + offset))
+      .where((v) => _blocked.contains(v + _cursor + offset))
       .isEmpty;
 
   bool inBounds({Vector offset = Vector.zero}) =>
@@ -44,12 +45,15 @@ class Board {
           .isEmpty;
 
   bool move(Vector offset) {
-    if (inBounds(offset: offset) && isFree(offset: offset)) {
+    if (canMove(offset)) {
       _cursor += offset;
       return true;
     }
     return false;
   }
+
+  bool canMove(Vector offset) =>
+      inBounds(offset: offset) && isFree(offset: offset);
 
   bool rotate({bool clockwise = true}) {
     final Rotation from = currentPiece.rotation;
@@ -75,23 +79,25 @@ class Board {
   }
 
   void spawn() {
+    if (nextPieces.length <= 3) {
+      nextPieces.addAll(nextPieceBag);
+    }
     currentPiece = nextPieces[0];
     nextPieces.removeAt(0);
-    nextPieces.add(nextPiece);
     _cursor = currentPiece.spawnOffset(x, y);
   }
 
   void merge() {
     for (var element in currentPiece.tiles) {
-      _occupied.add(element + _cursor);
+      _blocked.add(element + _cursor);
     }
   }
 
   void clearRows() {
     int clearedRows = 0;
-    var occupied = List.of(_occupied);
+    var occupied = List.of(_blocked);
     for (int yp = y - 1; yp >= 0; yp--) {
-      var result = _occupied.where((element) => element.y == yp);
+      var result = _blocked.where((element) => element.y == yp);
       if (result.length == x) {
         clearedRows++;
         final belowVectors = occupied.where((element) => element.y < yp);
@@ -103,26 +109,42 @@ class Board {
       }
     }
     _clearedRows += clearedRows;
-    _occupied.clear();
-    _occupied.addAll(occupied);
+    _blocked.clear();
+    _blocked.addAll(occupied);
+  }
+
+  void hold() {
+    final tmp = currentPiece;
+    while (tmp.rotation != Rotation.zero) {
+      tmp.rotate();
+    }
+    if (holdPiece == null) {
+      holdPiece = tmp;
+      spawn();
+    } else {
+      currentPiece = holdPiece!;
+      holdPiece = tmp;
+    }
+    _cursor = currentPiece.spawnOffset(x, y);
   }
 
   void start() {
     spawn();
-    _occupied.clear();
-    _occupied.addAll(getPredefinedOccupiedTiles());
+    _blocked.clear();
+    _blocked.addAll(getPredefinedBlockedTiles());
     _clearedRows = 0;
+    holdPiece = null;
   }
 
-  bool isBlockOut() => _occupied.where((e) => e.y == y - 1).isNotEmpty;
+  bool isBlockOut() => _blocked.where((e) => e.y == y - 1).isNotEmpty;
 
-  Vector _tileVectorFromIndex({required int index}) {
+  Vector _tileVectorFromIndex(int index) {
     final xp = index % x;
     final yp = y - ((index - index % x) / x).round() - 1;
     return Vector(xp, yp);
   }
 
-  static List<Vector> getPredefinedOccupiedTiles() {
+  static List<Vector> getPredefinedBlockedTiles() {
     final board = [
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -190,12 +212,12 @@ class Board {
       //[1, 1, 0, 0, 0, 0, 0, 1, 0, 0],
       //[1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
     ].reversed.toList();
-    final List<Vector> occupied = [];
+    final List<Vector> blocked = [];
     for (int yp = 0; yp < board.length; yp++) {
       for (int xp = 0; xp < board.first.length; xp++) {
-        if (board[yp][xp] == 1) occupied.add(Vector(xp, yp));
+        if (board[yp][xp] == 1) blocked.add(Vector(xp, yp));
       }
     }
-    return occupied;
+    return blocked;
   }
 }
