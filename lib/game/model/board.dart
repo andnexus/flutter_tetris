@@ -1,11 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:tetris/game/piece.dart';
-import 'package:tetris/game/rotation.dart';
-import 'package:tetris/game/vector.dart';
+import 'dart:async';
 
-class Board {
-  final int x;
-  final int y;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:tetris/game/model/level.dart';
+import 'package:tetris/game/model/piece.dart';
+import 'package:tetris/game/model/rotation.dart';
+import 'package:tetris/game/model/vector.dart';
+
+class Board extends ChangeNotifier {
+  static const Duration lockDelayTime = Duration(seconds: 1);
+  static const int x = 10;
+  static const int y = 2 * x;
+
+  Timer? gameTimer;
+  Timer? moveTimer;
+  int lastMovedTime = 0;
+
   final List<Vector> _blocked;
 
   Piece currentPiece;
@@ -16,15 +26,50 @@ class Board {
 
   Vector _cursor;
 
+  Vector get cursor => _cursor;
+
   int _clearedRows = 0;
 
   int get clearedRows => _clearedRows;
 
-  Board(this.x, this.y)
+  Board()
       : currentPiece = Piece.empty(),
         _blocked = [],
         _cursor = Vector.zero {
+    moveTimer = Timer.periodic(const Duration(milliseconds: 60), (Timer timer) {
+      if (isBlockOut()) {
+        moveTimer?.cancel();
+        startGame();
+      } else if (!canMove(const Vector(0, -1)) && isLockDelayExpired()) {
+        moveTimer?.cancel();
+        merge();
+        clearRows();
+        spawn();
+        startMoveTimer();
+      }
+    });
+    startGame();
     start();
+  }
+
+  void startMoveTimer() {
+    moveTimer = Timer.periodic(getLevel(clearedRows).speed, (Timer timer) {
+      move(const Vector(0, -1));
+    });
+  }
+
+  bool isLockDelayExpired() =>
+      lastMovedTime <
+      DateTime.now().millisecondsSinceEpoch - lockDelayTime.inMilliseconds;
+
+  void moveToFloor() {
+    while (move(const Vector(0, -1))) {}
+    lastMovedTime = 0;
+  }
+
+  void startGame() {
+    start();
+    startMoveTimer();
   }
 
   bool isOccupied(i) => _blocked.contains(_tileVectorFromIndex(i));
@@ -38,7 +83,7 @@ class Board {
 
   bool inBounds({Vector offset = Vector.zero}) =>
       currentPiece.tiles
-          .where((v) => v + _cursor + offset >= Vector(x, y))
+          .where((v) => v + _cursor + offset >= const Vector(x, y))
           .isEmpty &&
       currentPiece.tiles
           .where((v) => v + _cursor + offset < Vector.zero)
@@ -47,6 +92,7 @@ class Board {
   bool move(Vector offset) {
     if (canMove(offset)) {
       _cursor += offset;
+      _notify();
       return true;
     }
     return false;
@@ -62,6 +108,7 @@ class Board {
       // always apply first kick translation to correct o piece "wobble"
       _cursor += currentPiece.getKicks(from: from, clockwise: clockwise).first;
       debugPrint("$from${currentPiece.rotation} rotated with first kick");
+      _notify();
       return true;
     } else {
       final kicks = currentPiece.getKicks(from: from, clockwise: clockwise);
@@ -69,6 +116,7 @@ class Board {
         if (inBounds(offset: kick) && isFree(offset: kick)) {
           _cursor += kick;
           debugPrint("$from${currentPiece.rotation} rotated with kick $kick");
+          _notify();
           return true;
         }
       }
@@ -85,6 +133,7 @@ class Board {
     currentPiece = nextPieces[0];
     nextPieces.removeAt(0);
     _cursor = currentPiece.spawnOffset(x, y);
+    _notify();
   }
 
   void merge() {
@@ -126,6 +175,7 @@ class Board {
       holdPiece = tmp;
     }
     _cursor = currentPiece.spawnOffset(x, y);
+    _notify();
   }
 
   void start() {
@@ -142,6 +192,19 @@ class Board {
     final xp = index % x;
     final yp = y - ((index - index % x) / x).round() - 1;
     return Vector(xp, yp);
+  }
+
+  void _notify() {
+    lastMovedTime = DateTime.now().millisecondsSinceEpoch;
+    notifyListeners();
+  }
+
+  Color getTileColor(int i) {
+    return isOccupied(i)
+        ? Colors.grey
+        : isCurrentPieceTile(i)
+        ? currentPiece.color
+        : Colors.black;
   }
 
   static List<Vector> getPredefinedBlockedTiles() {
@@ -220,4 +283,30 @@ class Board {
     }
     return blocked;
   }
+
+  KeyEventResult onKey(FocusNode node, RawKeyEvent event) {
+    if (event is RawKeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        move(const Vector(-1, 0));
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        move(const Vector(1, 0));
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        hold();
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        move(const Vector(0, -1));
+      } else if (event.logicalKey == LogicalKeyboardKey.keyA) {
+        rotate(clockwise: false);
+      } else if (event.logicalKey == LogicalKeyboardKey.keyD) {
+        rotate(clockwise: true);
+      } else if (event.logicalKey == LogicalKeyboardKey.space) {
+        moveToFloor();
+      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+        nextPieces.clear();
+        moveTimer?.cancel();
+        startGame();
+      }
+    }
+    return KeyEventResult.handled;
+  }
+
 }
