@@ -17,7 +17,7 @@ class PiecesWidget extends StatelessWidget {
               direction: Axis.vertical,
               crossAxisAlignment: WrapCrossAlignment.center,
               alignment: WrapAlignment.center,
-              spacing: 50,
+              spacing: 20,
               children: List.generate(
                   pieces.length,
                   (i) => Wrap(
