@@ -6,8 +6,8 @@ class PiecesWidget extends StatelessWidget {
   final List<Piece> pieces;
 
   const PiecesWidget({
-    super.key,
     required this.pieces,
+    super.key,
   });
 
   @override
@@ -26,7 +26,6 @@ class PiecesWidget extends StatelessWidget {
                         children: List.generate(
                           pieces[i].height,
                           (y) => Wrap(
-                            direction: Axis.horizontal,
                             spacing: 1,
                             children: List.generate(
                               pieces[i].width,

@@ -10,12 +10,12 @@ Keys to control Tetrominos.
 | Key   | Action                  |
 |-------|-------------------------|
 |   →   | move right              |
-|   ↓   | move down               |
 |   ←   | move left               |
+|   D   | rotate right            |
+|   A   | rotate left             |
 |   ↑   | hold                    |
-|   A   | rotate counterclockwise |
-|   D   | rotate clockwise        |
-| SPACE | move to floor           |
+|   ↓   | soft drop               |
+| SPACE | hard drop               |
 |  ESC  | Restart                 |
 
 ## Wall kick example

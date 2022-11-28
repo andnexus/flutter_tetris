@@ -55,7 +55,7 @@ final _level = _levelSpeed
     .toList();
 
 Level getLevel(int rows) {
-  int level = (rows - rows % 10) ~/ 10;
+  var level = (rows - rows % 10) ~/ 10;
   if (level >= _level.length) {
     level = _level.length - 1;
   }

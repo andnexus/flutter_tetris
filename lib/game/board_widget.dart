@@ -27,7 +27,6 @@ class BoardWidget extends StatelessWidget {
               children: List.generate(
                 Board.y,
                 (y) => Wrap(
-                  direction: Axis.horizontal,
                   spacing: thickness,
                   children: List.generate(
                     Board.x,

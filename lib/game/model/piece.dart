@@ -6,17 +6,15 @@ import 'package:tetris/game/model/rotation.dart';
 import 'package:tetris/game/model/vector.dart';
 
 /// https://harddrop.com/wiki/Random_Generator
-List<Piece> get nextPieceBag {
-  return _tiles
-      .mapIndexed((index, element) => Piece(
-            center: _center[index],
-            color: _colors[index],
-            tiles: element,
-            kicks: _kicks[index],
-          ))
-      .toList()
-    ..shuffle(); // 7! permutations (5040)
-}
+List<Piece> get nextPieceBag => _tiles
+    .mapIndexed((index, element) => Piece(
+          center: _center[index],
+          color: _colors[index],
+          tiles: element,
+          kicks: _kicks[index],
+        ))
+    .toList()
+  ..shuffle(); // 7! permutations (5040)
 
 class Piece {
   final Vector center;
@@ -26,11 +24,6 @@ class Piece {
 
   Rotation rotation = Rotation.zero;
 
-  Piece.empty()
-      : center = Vector.zero,
-        color = const Color(0xFF000000),
-        kicks = {};
-
   Piece({
     required this.color,
     required this.kicks,
@@ -38,16 +31,23 @@ class Piece {
     required List<List<int>> tiles,
   }) {
     tiles = tiles.reversed.toList();
-    for (int yp = 0; yp < tiles.length; yp++) {
-      for (int xp = 0; xp < tiles.first.length; xp++) {
-        if (tiles[yp][xp] == 1) this.tiles.add(Vector(xp, yp));
+    for (var yp = 0; yp < tiles.length; yp++) {
+      for (var xp = 0; xp < tiles.first.length; xp++) {
+        if (tiles[yp][xp] == 1) {
+          this.tiles.add(Vector(xp, yp));
+        }
       }
     }
   }
 
+  Piece.empty()
+      : center = Vector.zero,
+        color = const Color(0xFF000000),
+        kicks = {};
+
   void rotate({bool clockwise = true}) {
     final angle = clockwise ? -pi / 2 : pi / 2;
-    for (int i = 0; i < tiles.length; i++) {
+    for (var i = 0; i < tiles.length; i++) {
       final p = tiles[i];
       final px = cos(angle) * (p.x - center.x) -
           sin(angle) * (p.y - center.y) +
@@ -66,7 +66,7 @@ class Piece {
       );
 
   List<Vector> getKicks({required Rotation from, bool clockwise = true}) {
-    final Rotation to = _nextRotation(from, clockwise);
+    final to = _nextRotation(from, clockwise);
     return kicks.isNotEmpty ? kicks['$from$to']! : [];
   }
 
@@ -120,7 +120,7 @@ const _colors = [
 
 const _center = [
   Vector(1, 0),
-  Vector(0, 0),
+  Vector.zero,
   Vector(1, 0),
   Vector(1, 0),
   Vector(1, 0),
@@ -140,56 +140,56 @@ const _kicks = [
 ];
 
 const _jlstzWallKicks = {
-  "0R": [
+  '0R': [
     Vector.zero,
     Vector(-1, 0),
     Vector(-1, 1),
     Vector(0, -2),
     Vector(-1, -2),
   ],
-  "R0": [
+  'R0': [
     Vector.zero,
     Vector(1, 0),
     Vector(1, -1),
     Vector(0, 2),
     Vector(1, 2),
   ],
-  "R2": [
+  'R2': [
     Vector.zero,
     Vector(1, 0),
     Vector(1, -1),
     Vector(0, 2),
     Vector(1, 2),
   ],
-  "2R": [
+  '2R': [
     Vector.zero,
     Vector(-1, 0),
     Vector(-1, 1),
     Vector(0, -2),
     Vector(-1, -2),
   ],
-  "2L": [
+  '2L': [
     Vector.zero,
     Vector(1, 0),
     Vector(1, 1),
     Vector(0, -2),
     Vector(1, -2),
   ],
-  "L2": [
+  'L2': [
     Vector.zero,
     Vector(-1, 0),
     Vector(-1, -1),
     Vector(0, 2),
     Vector(-1, 2),
   ],
-  "L0": [
+  'L0': [
     Vector.zero,
     Vector(-1, 0),
     Vector(-1, -1),
     Vector(0, 2),
     Vector(-1, 2),
   ],
-  "0L": [
+  '0L': [
     Vector.zero,
     Vector(1, 0),
     Vector(1, 1),
@@ -198,57 +198,59 @@ const _jlstzWallKicks = {
   ],
 };
 
+// The original wall kick vectors for I piece.
+// ignore: unused_element
 const _iWallKicks = {
-  "0R": [
+  '0R': [
     Vector.zero,
     Vector(-2, 0),
     Vector(1, 0),
     Vector(-2, -1),
     Vector(1, 2),
   ],
-  "R0": [
+  'R0': [
     Vector.zero,
     Vector(2, 0),
     Vector(-1, 0),
     Vector(2, 1),
     Vector(-1, -2),
   ],
-  "R2": [
+  'R2': [
     Vector.zero,
     Vector(-1, 0),
     Vector(2, 0),
     Vector(-1, 2),
     Vector(2, -1),
   ],
-  "2R": [
+  '2R': [
     Vector.zero,
     Vector(1, 0),
     Vector(-2, 0),
     Vector(1, -2),
     Vector(-2, 1),
   ],
-  "2L": [
+  '2L': [
     Vector.zero,
     Vector(2, 0),
     Vector(-1, 0),
     Vector(2, 1),
     Vector(-1, -2),
   ],
-  "L2": [
+  'L2': [
     Vector.zero,
     Vector(-2, 0),
     Vector(1, 0),
     Vector(-2, -1),
     Vector(1, 2),
   ],
-  "L0": [
+  'L0': [
     Vector.zero,
     Vector(1, 0),
     Vector(-2, 0),
     Vector(1, -2),
     Vector(-2, 1),
   ],
-  "0L": [
+  '0L': [
     Vector.zero,
     Vector(-1, 0),
     Vector(2, 0),
@@ -258,84 +260,84 @@ const _iWallKicks = {
 };
 
 const _oWallKicks = {
-  "0R": [
+  '0R': [
     Vector(0, 1),
   ],
-  "R0": [
+  'R0': [
     Vector(0, -1),
   ],
-  "R2": [
+  'R2': [
     Vector(1, 0),
   ],
-  "2R": [
+  '2R': [
     Vector(-1, 0),
   ],
-  "2L": [
+  '2L': [
     Vector(0, -1),
   ],
-  "L2": [
+  'L2': [
     Vector(0, 1),
   ],
-  "L0": [
+  'L0': [
     Vector(-1, 0),
   ],
-  "0L": [
+  '0L': [
     Vector(1, 0),
   ],
 };
 
 /// https://harddrop.com/wiki/SRS#Arika_SRS
 const _iWallKicksArika = {
-  "0R": [
+  '0R': [
     Vector.zero,
     Vector(-2, 0),
     Vector(1, 0),
     Vector(1, 2),
     Vector(-2, -1),
   ],
-  "R0": [
+  'R0': [
     Vector.zero,
     Vector(2, 0),
     Vector(-1, 0),
     Vector(2, 1),
     Vector(-1, -2),
   ],
-  "R2": [
+  'R2': [
     Vector.zero,
     Vector(-1, 0),
     Vector(2, 0),
     Vector(-1, 2),
     Vector(2, -1),
   ],
-  "2R": [
+  '2R': [
     Vector.zero,
     Vector(-2, 0),
     Vector(1, 0),
     Vector(-2, 1),
     Vector(1, -1),
   ],
-  "2L": [
+  '2L': [
     Vector.zero,
     Vector(2, 0),
     Vector(-1, 0),
     Vector(2, 1),
     Vector(-1, -1),
   ],
-  "L2": [
+  'L2': [
     Vector.zero,
     Vector(1, 0),
     Vector(-2, 0),
     Vector(1, 2),
     Vector(-2, -1),
   ],
-  "L0": [
+  'L0': [
     Vector.zero,
     Vector(-2, 0),
     Vector(1, 0),
     Vector(-2, 1),
     Vector(1, -2),
   ],
-  "0L": [
+  '0L': [
     Vector.zero,
     Vector(2, 0),
     Vector(-1, 0),

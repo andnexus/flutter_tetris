@@ -16,8 +16,8 @@ class SwipeGestureDetector extends StatefulWidget {
   final VoidCallback? onLongPress;
 
   const SwipeGestureDetector({
-    Key? key,
     required this.child,
+    Key? key,
     this.swipeConfigVertical = const SwipeConfig(),
     this.swipeConfigHorizontal = const SwipeConfig(),
     this.behavior = HitTestBehavior.deferToChild,
@@ -56,10 +56,11 @@ class SwipeGestureDetectorState extends State<SwipeGestureDetector> {
       final offsetDifference = initialOffset.dy - finalOffset.dy;
 
       if (offsetDifference.abs() > widget.swipeConfigVertical.threshold) {
-        _initialSwipeOffset = widget.swipeConfigVertical.swipeDetectionBehavior ==
-                SwipeDetectionBehavior.singular
-            ? null
-            : _finalSwipeOffset;
+        _initialSwipeOffset =
+            widget.swipeConfigVertical.swipeDetectionBehavior ==
+                    SwipeDetectionBehavior.singular
+                ? null
+                : _finalSwipeOffset;
 
         final direction =
             offsetDifference > 0 ? SwipeDirection.up : SwipeDirection.down;
@@ -115,10 +116,11 @@ class SwipeGestureDetectorState extends State<SwipeGestureDetector> {
       final offsetDifference = initialOffset.dx - finalOffset.dx;
 
       if (offsetDifference.abs() > widget.swipeConfigHorizontal.threshold) {
-        _initialSwipeOffset = widget.swipeConfigHorizontal.swipeDetectionBehavior ==
-                SwipeDetectionBehavior.singular
-            ? null
-            : _finalSwipeOffset;
+        _initialSwipeOffset =
+            widget.swipeConfigHorizontal.swipeDetectionBehavior ==
+                    SwipeDetectionBehavior.singular
+                ? null
+                : _finalSwipeOffset;
 
         final direction =
             offsetDifference > 0 ? SwipeDirection.left : SwipeDirection.right;
@@ -156,27 +158,25 @@ class SwipeGestureDetectorState extends State<SwipeGestureDetector> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: widget.behavior,
-      onTapUp: widget.onTapUp,
-      onLongPress: widget.onLongPress,
-      onDoubleTap: widget.onDoubleTap,
-      onVerticalDragStart:
-          widget.onVerticalSwipe != null ? _onVerticalDragStart : null,
-      onVerticalDragUpdate:
-          widget.onVerticalSwipe != null ? _onVerticalDragUpdate : null,
-      onVerticalDragEnd:
-          widget.onVerticalSwipe != null ? _onVerticalDragEnd : null,
-      onHorizontalDragStart:
-          widget.onHorizontalSwipe != null ? _onHorizontalDragStart : null,
-      onHorizontalDragUpdate:
-          widget.onHorizontalSwipe != null ? _onHorizontalDragUpdate : null,
-      onHorizontalDragEnd:
-          widget.onHorizontalSwipe != null ? _onHorizontalDragEnd : null,
-      child: widget.child,
-    );
-  }
+  Widget build(BuildContext context) => GestureDetector(
+        behavior: widget.behavior,
+        onTapUp: widget.onTapUp,
+        onLongPress: widget.onLongPress,
+        onDoubleTap: widget.onDoubleTap,
+        onVerticalDragStart:
+            widget.onVerticalSwipe != null ? _onVerticalDragStart : null,
+        onVerticalDragUpdate:
+            widget.onVerticalSwipe != null ? _onVerticalDragUpdate : null,
+        onVerticalDragEnd:
+            widget.onVerticalSwipe != null ? _onVerticalDragEnd : null,
+        onHorizontalDragStart:
+            widget.onHorizontalSwipe != null ? _onHorizontalDragStart : null,
+        onHorizontalDragUpdate:
+            widget.onHorizontalSwipe != null ? _onHorizontalDragUpdate : null,
+        onHorizontalDragEnd:
+            widget.onHorizontalSwipe != null ? _onHorizontalDragEnd : null,
+        child: widget.child,
+      );
 }
 
 enum SwipeDetectionBehavior {

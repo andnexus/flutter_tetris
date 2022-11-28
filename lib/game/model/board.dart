@@ -39,7 +39,7 @@ class Board extends ChangeNotifier {
       : currentPiece = Piece.empty(),
         _blocked = [],
         _cursor = Vector.zero {
-    moveTimer = Timer.periodic(const Duration(milliseconds: 60), (Timer timer) {
+    moveTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
       if (isBlockOut()) {
         moveTimer?.cancel();
         startGame();
@@ -52,11 +52,10 @@ class Board extends ChangeNotifier {
       }
     });
     startGame();
-    start();
   }
 
   void startMoveTimer() {
-    moveTimer = Timer.periodic(getLevel(clearedRows).speed, (Timer timer) {
+    moveTimer = Timer.periodic(getLevel(clearedRows).speed, (timer) {
       move(const Vector(0, -1));
     });
   }
@@ -65,19 +64,19 @@ class Board extends ChangeNotifier {
       lastMovedTime <
       DateTime.now().millisecondsSinceEpoch - lockDelayTime.inMilliseconds;
 
-  void moveToFloor() {
+  void hardDrop() {
     while (move(const Vector(0, -1))) {}
     lastMovedTime = 0;
   }
 
   void startGame() {
-    start();
+    reset();
     startMoveTimer();
   }
 
-  bool isOccupied(v) => _blocked.contains(v);
+  bool isOccupied(Vector v) => _blocked.contains(v);
 
-  bool isCurrentPieceTile(v) => currentPiece.tiles.contains(v - _cursor);
+  bool isCurrentPieceTile(Vector v) => currentPiece.tiles.contains(v - _cursor);
 
   bool isFree({Vector offset = Vector.zero}) => currentPiece.tiles
       .where((v) => _blocked.contains(v + _cursor + offset))
@@ -104,26 +103,26 @@ class Board extends ChangeNotifier {
       inBounds(offset: offset) && isFree(offset: offset);
 
   bool rotate({bool clockwise = true}) {
-    final Rotation from = currentPiece.rotation;
+    final from = currentPiece.rotation;
     currentPiece.rotate(clockwise: clockwise);
     if (inBounds() && isFree()) {
       // always apply first kick translation to correct o piece "wobble"
       _cursor += currentPiece.getKicks(from: from, clockwise: clockwise).first;
-      debugPrint("$from${currentPiece.rotation} rotated with first kick");
+      debugPrint('$from${currentPiece.rotation} rotated with first kick');
       _notify();
       return true;
     } else {
       final kicks = currentPiece.getKicks(from: from, clockwise: clockwise);
-      for (var kick in kicks) {
+      for (final kick in kicks) {
         if (inBounds(offset: kick) && isFree(offset: kick)) {
           _cursor += kick;
-          debugPrint("$from${currentPiece.rotation} rotated with kick $kick");
+          debugPrint('$from${currentPiece.rotation} rotated with kick $kick');
           _notify();
           return true;
         }
       }
     }
-    debugPrint("Rotation reverted");
+    debugPrint('Rotation reverted');
     currentPiece.rotate(clockwise: !clockwise);
     return false;
   }
@@ -139,16 +138,16 @@ class Board extends ChangeNotifier {
   }
 
   void merge() {
-    for (var element in currentPiece.tiles) {
+    for (final element in currentPiece.tiles) {
       _blocked.add(element + _cursor);
     }
   }
 
   void clearRows() {
-    int clearedRows = 0;
+    var clearedRows = 0;
     var occupied = List.of(_blocked);
-    for (int yp = y - 1; yp >= 0; yp--) {
-      var result = _blocked.where((element) => element.y == yp);
+    for (var yp = y - 1; yp >= 0; yp--) {
+      final result = _blocked.where((element) => element.y == yp);
       if (result.length == x) {
         clearedRows++;
         final belowVectors = occupied.where((element) => element.y < yp);
@@ -156,12 +155,13 @@ class Board extends ChangeNotifier {
             .where((element) => element.y > yp)
             .map((e) => e + const Vector(0, -1));
         occupied = [...belowVectors, ...aboveVectors];
-        debugPrint("Cleared row $yp");
+        debugPrint('Cleared row $yp');
       }
     }
     _clearedRows += clearedRows;
-    _blocked.clear();
-    _blocked.addAll(occupied);
+    _blocked
+      ..clear()
+      ..addAll(occupied);
   }
 
   void hold() {
@@ -180,16 +180,19 @@ class Board extends ChangeNotifier {
     _notify();
   }
 
-  void start() {
+  void reset() {
     spawn();
-    _blocked.clear();
-    _blocked.addAll(getPredefinedBlockedTiles());
+    _blocked
+      ..clear()
+      ..addAll(getPredefinedBlockedTiles());
     _clearedRows = 0;
     holdPiece = null;
   }
 
   bool isBlockOut() => _blocked.where((e) => e.y == y - 1).isNotEmpty;
 
+  // Map grid tile index to a vector.
+  // ignore: unused_element
   Vector _tileVectorFromIndex(int index) {
     final xp = index % x;
     final yp = y - ((index - index % x) / x).round() - 1;
@@ -201,13 +204,11 @@ class Board extends ChangeNotifier {
     notifyListeners();
   }
 
-  Color getTileColor(Vector vector) {
-    return isOccupied(vector)
-        ? Colors.grey
-        : isCurrentPieceTile(vector)
-            ? currentPiece.color
-            : Colors.black;
-  }
+  Color getTileColor(Vector vector) => isOccupied(vector)
+      ? Colors.grey
+      : isCurrentPieceTile(vector)
+          ? currentPiece.color
+          : Colors.black;
 
   static List<Vector> getPredefinedBlockedTiles() {
     final board = [
@@ -277,10 +278,12 @@ class Board extends ChangeNotifier {
       //[1, 1, 0, 0, 0, 0, 0, 1, 0, 0],
       //[1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
     ].reversed.toList();
-    final List<Vector> blocked = [];
-    for (int yp = 0; yp < board.length; yp++) {
-      for (int xp = 0; xp < board.first.length; xp++) {
-        if (board[yp][xp] == 1) blocked.add(Vector(xp, yp));
+    final blocked = <Vector>[];
+    for (var yp = 0; yp < board.length; yp++) {
+      for (var xp = 0; xp < board.first.length; xp++) {
+        if (board[yp][xp] == 1) {
+          blocked.add(Vector(xp, yp));
+        }
       }
     }
     return blocked;
@@ -299,9 +302,9 @@ class Board extends ChangeNotifier {
       } else if (event.logicalKey == LogicalKeyboardKey.keyA) {
         rotate(clockwise: false);
       } else if (event.logicalKey == LogicalKeyboardKey.keyD) {
-        rotate(clockwise: true);
+        rotate();
       } else if (event.logicalKey == LogicalKeyboardKey.space) {
-        moveToFloor();
+        hardDrop();
       } else if (event.logicalKey == LogicalKeyboardKey.escape) {
         _nextPieces.clear();
         moveTimer?.cancel();
@@ -312,7 +315,7 @@ class Board extends ChangeNotifier {
   }
 
   void onTapUp(BuildContext context, TapUpDetails details) {
-    final RenderBox box = context.findRenderObject() as RenderBox;
+    final box = context.findRenderObject() as RenderBox;
     final localOffset = box.globalToLocal(details.globalPosition);
     final x = localOffset.dx;
     final clockwise = x >= box.size.width / 2;
@@ -323,7 +326,7 @@ class Board extends ChangeNotifier {
     if (direction == SwipeDirection.up) {
       hold();
     } else {
-      moveToFloor();
+      hardDrop();
     }
   }
 

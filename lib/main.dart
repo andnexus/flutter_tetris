@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tetris/game/model/board.dart';
 import 'package:tetris/game/tetris_widget.dart';
-
-import 'game/model/board.dart';
 
 void main() {
   runApp(const App());
@@ -13,7 +12,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider(
-        create: (BuildContext context) => Board(),
+        create: (context) => Board(),
         child: MaterialApp(
           theme: ThemeData(brightness: Brightness.dark).copyWith(
             scaffoldBackgroundColor: const Color(0xFF000000),

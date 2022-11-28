@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tetris/game/board_widget.dart';
 import 'package:tetris/game/gestures/swipe_gesture_detector.dart';
 import 'package:tetris/game/model/board.dart';
 import 'package:tetris/game/model/piece.dart';
 import 'package:tetris/game/pieces_widget.dart';
-
-import 'board_widget.dart';
 
 class TetrisWidget extends StatelessWidget {
   const TetrisWidget({super.key});
@@ -14,11 +13,11 @@ class TetrisWidget extends StatelessWidget {
   Widget build(BuildContext context) => SwipeGestureDetector(
         onTapUp: (details) => context.read<Board>().onTapUp(context, details),
         swipeConfigHorizontal: const SwipeConfig(
-          threshold: 30.0,
+          threshold: 30,
           swipeDetectionBehavior: SwipeDetectionBehavior.continuous,
         ),
         swipeConfigVertical: const SwipeConfig(
-          threshold: 60.0,
+          threshold: 60,
           swipeDetectionBehavior: SwipeDetectionBehavior.singularOnEnd,
         ),
         onHorizontalSwipe: context.read<Board>().onHorizontalSwipe,
