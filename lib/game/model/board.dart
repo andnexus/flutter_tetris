@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tetris/game/gestures/swipe_gesture_detector.dart';
 import 'package:tetris/game/model/level.dart';
 import 'package:tetris/game/model/piece.dart';
 import 'package:tetris/game/model/rotation.dart';
 import 'package:tetris/game/model/vector.dart';
+import 'package:tetris/game/tetris_widget.dart';
 
 class Board extends ChangeNotifier {
   static const Duration lockDelayTime = Duration(seconds: 1);
@@ -33,7 +33,7 @@ class Board extends ChangeNotifier {
 
   int _clearedRows = 0;
 
-  int get clearedRows => _clearedRows;
+  int get clearedLines => _clearedRows;
 
   Board()
       : currentPiece = Piece.empty(),
@@ -55,7 +55,7 @@ class Board extends ChangeNotifier {
   }
 
   void startMoveTimer() {
-    moveTimer = Timer.periodic(getLevel(clearedRows).speed, (timer) {
+    moveTimer = Timer.periodic(getLevel(clearedLines).speed, (timer) {
       move(const Vector(0, -1));
     });
   }
@@ -204,11 +204,40 @@ class Board extends ChangeNotifier {
     notifyListeners();
   }
 
-  Color getTileColor(Vector vector) => isOccupied(vector)
-      ? Colors.grey
-      : isCurrentPieceTile(vector)
-          ? currentPiece.color
-          : Colors.black;
+  bool isGhostTile(Vector v) {
+    var offset = const Vector(0, -1);
+    while (canMove(offset)) {
+      offset += const Vector(0, -1);
+    }
+    return currentPiece.tiles
+        .contains(v - _cursor - offset - const Vector(0, 1));
+  }
+
+  Widget _getTile(Vector vector) {
+    if (isOccupied(vector)) {
+      return Container(color: Colors.grey);
+    } else if (isCurrentPieceTile(vector)) {
+      return Container(color: currentPiece.color);
+    } else if (isGhostTile(vector)) {
+      return Container(
+        color: Colors.black,
+        padding: const EdgeInsets.all(1),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black,
+            border: Border.all(
+              color: Colors.grey,
+              width: 1,
+            ),
+          ),
+        ),
+      );
+    }
+    return Container(color: Colors.black);
+  }
+
+  List<Widget> getTiles() => List.generate(
+      Board.x * Board.y, (index) => _getTile(_tileVectorFromIndex(index)));
 
   static List<Vector> getPredefinedBlockedTiles() {
     final board = [
@@ -322,19 +351,25 @@ class Board extends ChangeNotifier {
     rotate(clockwise: clockwise);
   }
 
-  void onVerticalSwipe(SwipeDirection direction) {
-    if (direction == SwipeDirection.up) {
-      hold();
-    } else {
-      hardDrop();
-    }
-  }
-
-  void onHorizontalSwipe(SwipeDirection direction) {
-    if (direction == SwipeDirection.left) {
-      move(const Vector(-1, 0));
-    } else {
-      move(const Vector(1, 0));
+  void onTouch(TouchAction action) {
+    switch (action) {
+      case TouchAction.right:
+        move(const Vector(1, 0));
+        break;
+      case TouchAction.left:
+        move(const Vector(-1, 0));
+        break;
+      case TouchAction.up:
+        break;
+      case TouchAction.down:
+        move(const Vector(0, -1));
+        break;
+      case TouchAction.upEnd:
+        hold();
+        break;
+      case TouchAction.downEnd:
+        hardDrop();
+        break;
     }
   }
 }

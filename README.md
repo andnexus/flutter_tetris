@@ -5,23 +5,21 @@ with [Super Rotation System](https://harddrop.com/wiki/SRS).
 
 ## Controls
 
-Keys to control Tetrominos.
+Control Tetrominos with keyboard or gestures. 
 
-| Key   | Action                  |
-|-------|-------------------------|
-|   →   | move right              |
-|   ←   | move left               |
-|   D   | rotate right            |
-|   A   | rotate left             |
-|   ↑   | hold                    |
-|   ↓   | soft drop               |
-| SPACE | hard drop               |
-|  ESC  | Restart                 |
+| Action                  | Key   | Gesture                 |
+|-------------------------|-------|-------------------------|
+| move right              |   →   | swipe right             |
+| move left               |   ←   | swipe left              |
+| rotate right            |   D   | tap right               |
+| rotate left             |   A   | tap left                |
+| hold                    |   ↑   | swipe up                |
+| soft drop               |   ↓   | hold and swipe down     |
+| hard drop               | SPACE | swipe down              |
+| Restart                 |  ESC  |                         |
 
 ## Wall kick example
 
-Animation of T and J tetromino wall kick.
+Gameplay on macOS.
 
-![wall kick rotation](assets/tetris.gif "wall kick rotation")
-
-Build with&nbsp;❤️&nbsp;&nbsp;in Franconia.
+![gameplay](assets/tetris.gif "gameplay")
