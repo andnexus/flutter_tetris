@@ -130,7 +130,7 @@ const _center = [
 
 /// https://harddrop.com/wiki/SRS#Wall_Kicks
 const _kicks = [
-  _iWallKicks,
+  _iWallKicksArika,
   _oWallKicks,
   _jlstzWallKicks,
   _jlstzWallKicks,
@@ -323,7 +323,7 @@ const _iWallKicksArika = {
   ],
   "L2": [
     Vector.zero,
-    Vector(-1, 0),
+    Vector(1, 0),
     Vector(-2, 0),
     Vector(1, 2),
     Vector(-2, -1),
@@ -340,6 +340,6 @@ const _iWallKicksArika = {
     Vector(2, 0),
     Vector(-1, 0),
     Vector(-1, 2),
-    Vector(2, 1),
+    Vector(2, -1),
   ],
 };

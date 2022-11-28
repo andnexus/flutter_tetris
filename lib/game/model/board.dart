@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tetris/game/gestures/swipe_gesture_detector.dart';
 import 'package:tetris/game/model/level.dart';
 import 'package:tetris/game/model/piece.dart';
 import 'package:tetris/game/model/rotation.dart';
@@ -308,5 +309,29 @@ class Board extends ChangeNotifier {
       }
     }
     return KeyEventResult.handled;
+  }
+
+  void onTapUp(BuildContext context, TapUpDetails details) {
+    final RenderBox box = context.findRenderObject() as RenderBox;
+    final localOffset = box.globalToLocal(details.globalPosition);
+    final x = localOffset.dx;
+    final clockwise = x >= box.size.width / 2;
+    rotate(clockwise: clockwise);
+  }
+
+  void onVerticalSwipe(SwipeDirection direction) {
+    if (direction == SwipeDirection.up) {
+      hold();
+    } else {
+      moveToFloor();
+    }
+  }
+
+  void onHorizontalSwipe(SwipeDirection direction) {
+    if (direction == SwipeDirection.left) {
+      move(const Vector(-1, 0));
+    } else {
+      move(const Vector(1, 0));
+    }
   }
 }

@@ -18,7 +18,7 @@ class App extends StatelessWidget {
           theme: ThemeData(brightness: Brightness.dark).copyWith(
             scaffoldBackgroundColor: const Color(0xFF000000),
             dividerColor: const Color(0xFF2F2F2F),
-            dividerTheme: const DividerThemeData(thickness: 2),
+            dividerTheme: const DividerThemeData(thickness: 1),
           ),
           debugShowCheckedModeBanner: false,
           home: const TetrisWidget(),
