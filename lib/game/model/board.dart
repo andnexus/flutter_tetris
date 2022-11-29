@@ -107,7 +107,11 @@ class Board extends ChangeNotifier {
     currentPiece.rotate(clockwise: clockwise);
     if (inBounds() && isFree()) {
       // always apply first kick translation to correct o piece "wobble"
-      _cursor += currentPiece.getKicks(from: from, clockwise: clockwise).first;
+      final kick =
+          currentPiece.getKicks(from: from, clockwise: clockwise).first;
+      if (canMove(kick)) {
+        _cursor += kick;
+      }
       debugPrint('$from${currentPiece.rotation} rotated with first kick');
       _notify();
       return true;
@@ -260,12 +264,12 @@ class Board extends ChangeNotifier {
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
       // empty
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
       // clear rows test
       //[1, 1, 1, 1, 1, 1, 1, 0, 0, 1],

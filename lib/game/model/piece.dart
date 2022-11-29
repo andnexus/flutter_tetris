@@ -11,7 +11,7 @@ List<Piece> get nextPieceBag => _tiles
           center: _center[index],
           color: _colors[index],
           tiles: element,
-          kicks: _kicks[index],
+          offsets: _offsets[index],
         ))
     .toList()
   ..shuffle(); // 7! permutations (5040)
@@ -20,13 +20,13 @@ class Piece {
   final Vector center;
   final Color color;
   final List<Vector> tiles = [];
-  final Map<String, List<Vector>> kicks;
+  final Map<String, List<Vector>> offsets;
 
   Rotation rotation = Rotation.zero;
 
   Piece({
     required this.color,
-    required this.kicks,
+    required this.offsets,
     required this.center,
     required List<List<int>> tiles,
   }) {
@@ -43,7 +43,7 @@ class Piece {
   Piece.empty()
       : center = Vector.zero,
         color = const Color(0xFF000000),
-        kicks = {};
+        offsets = {};
 
   void rotate({bool clockwise = true}) {
     final angle = clockwise ? -pi / 2 : pi / 2;
@@ -66,8 +66,14 @@ class Piece {
       );
 
   List<Vector> getKicks({required Rotation from, bool clockwise = true}) {
-    final to = _nextRotation(from, clockwise);
-    return kicks.isNotEmpty ? kicks['$from$to']! : [];
+    final fromOffsets = offsets['$from'];
+    final toOffsets = offsets['${_nextRotation(from, clockwise)}'];
+    final result = <Vector>[];
+    for (var index = 0; index < fromOffsets!.length + 1; index++) {
+      result.add(fromOffsets[index % fromOffsets.length] -
+          toOffsets![index % toOffsets.length]);
+    }
+    return result;
   }
 
   Rotation _nextRotation(Rotation rotation, bool clockwise) => Rotation
@@ -128,220 +134,46 @@ const _center = [
   Vector(1, 0),
 ];
 
-/// https://harddrop.com/wiki/SRS#Wall_Kicks
-const _kicks = [
-  _iWallKicksArika,
-  _oWallKicks,
-  _jlstzWallKicks,
-  _jlstzWallKicks,
-  _jlstzWallKicks,
-  _jlstzWallKicks,
-  _jlstzWallKicks,
+/// https://tetris.wiki/Super_Rotation_System#How_Guideline_SRS_Really_Works
+const _offsets = [
+  _iOffsetData,
+  _oOffsetData,
+  _jlstzOffsetData,
+  _jlstzOffsetData,
+  _jlstzOffsetData,
+  _jlstzOffsetData,
+  _jlstzOffsetData,
 ];
 
-const _jlstzWallKicks = {
-  '0R': [
+const _jlstzOffsetData = {
+  '0': [Vector.zero, Vector.zero, Vector.zero, Vector.zero, Vector.zero],
+  'R': [Vector.zero, Vector(1, 0), Vector(1, -1), Vector(0, 2), Vector(1, 2)],
+  '2': [Vector.zero, Vector.zero, Vector.zero, Vector.zero, Vector.zero],
+  'L': [
     Vector.zero,
     Vector(-1, 0),
+    Vector(-1, -1),
+    Vector(0, 2),
+    Vector(-1, 2)
+  ],
+};
+
+const _iOffsetData = {
+  '0': [Vector.zero, Vector(-1, 0), Vector(2, 0), Vector(-1, 0), Vector(2, 0)],
+  'R': [Vector(-1, 0), Vector.zero, Vector.zero, Vector(0, 1), Vector(0, -2)],
+  '2': [
     Vector(-1, 1),
-    Vector(0, -2),
-    Vector(-1, -2),
-  ],
-  'R0': [
-    Vector.zero,
-    Vector(1, 0),
-    Vector(1, -1),
-    Vector(0, 2),
-    Vector(1, 2),
-  ],
-  'R2': [
-    Vector.zero,
-    Vector(1, 0),
-    Vector(1, -1),
-    Vector(0, 2),
-    Vector(1, 2),
-  ],
-  '2R': [
-    Vector.zero,
-    Vector(-1, 0),
-    Vector(-1, 1),
-    Vector(0, -2),
-    Vector(-1, -2),
-  ],
-  '2L': [
-    Vector.zero,
-    Vector(1, 0),
     Vector(1, 1),
-    Vector(0, -2),
-    Vector(1, -2),
-  ],
-  'L2': [
-    Vector.zero,
-    Vector(-1, 0),
-    Vector(-1, -1),
-    Vector(0, 2),
-    Vector(-1, 2),
-  ],
-  'L0': [
-    Vector.zero,
-    Vector(-1, 0),
-    Vector(-1, -1),
-    Vector(0, 2),
-    Vector(-1, 2),
-  ],
-  '0L': [
-    Vector.zero,
+    Vector(-2, 1),
     Vector(1, 0),
-    Vector(1, 1),
-    Vector(0, -2),
-    Vector(1, -2),
+    Vector(-2, 0)
   ],
+  'L': [Vector(0, 1), Vector(0, 1), Vector(0, 1), Vector(0, -1), Vector(0, 2)],
 };
 
-// The original wall kick vectors for I piece.
-// ignore: unused_element
-const _iWallKicks = {
-  '0R': [
-    Vector.zero,
-    Vector(-2, 0),
-    Vector(1, 0),
-    Vector(-2, -1),
-    Vector(1, 2),
-  ],
-  'R0': [
-    Vector.zero,
-    Vector(2, 0),
-    Vector(-1, 0),
-    Vector(2, 1),
-    Vector(-1, -2),
-  ],
-  'R2': [
-    Vector.zero,
-    Vector(-1, 0),
-    Vector(2, 0),
-    Vector(-1, 2),
-    Vector(2, -1),
-  ],
-  '2R': [
-    Vector.zero,
-    Vector(1, 0),
-    Vector(-2, 0),
-    Vector(1, -2),
-    Vector(-2, 1),
-  ],
-  '2L': [
-    Vector.zero,
-    Vector(2, 0),
-    Vector(-1, 0),
-    Vector(2, 1),
-    Vector(-1, -2),
-  ],
-  'L2': [
-    Vector.zero,
-    Vector(-2, 0),
-    Vector(1, 0),
-    Vector(-2, -1),
-    Vector(1, 2),
-  ],
-  'L0': [
-    Vector.zero,
-    Vector(1, 0),
-    Vector(-2, 0),
-    Vector(1, -2),
-    Vector(-2, 1),
-  ],
-  '0L': [
-    Vector.zero,
-    Vector(-1, 0),
-    Vector(2, 0),
-    Vector(-1, 2),
-    Vector(2, -1),
-  ],
-};
-
-const _oWallKicks = {
-  '0R': [
-    Vector(0, 1),
-  ],
-  'R0': [
-    Vector(0, -1),
-  ],
-  'R2': [
-    Vector(1, 0),
-  ],
-  '2R': [
-    Vector(-1, 0),
-  ],
-  '2L': [
-    Vector(0, -1),
-  ],
-  'L2': [
-    Vector(0, 1),
-  ],
-  'L0': [
-    Vector(-1, 0),
-  ],
-  '0L': [
-    Vector(1, 0),
-  ],
-};
-
-/// https://harddrop.com/wiki/SRS#Arika_SRS
-const _iWallKicksArika = {
-  '0R': [
-    Vector.zero,
-    Vector(-2, 0),
-    Vector(1, 0),
-    Vector(1, 2),
-    Vector(-2, -1),
-  ],
-  'R0': [
-    Vector.zero,
-    Vector(2, 0),
-    Vector(-1, 0),
-    Vector(2, 1),
-    Vector(-1, -2),
-  ],
-  'R2': [
-    Vector.zero,
-    Vector(-1, 0),
-    Vector(2, 0),
-    Vector(-1, 2),
-    Vector(2, -1),
-  ],
-  '2R': [
-    Vector.zero,
-    Vector(-2, 0),
-    Vector(1, 0),
-    Vector(-2, 1),
-    Vector(1, -1),
-  ],
-  '2L': [
-    Vector.zero,
-    Vector(2, 0),
-    Vector(-1, 0),
-    Vector(2, 1),
-    Vector(-1, -1),
-  ],
-  'L2': [
-    Vector.zero,
-    Vector(1, 0),
-    Vector(-2, 0),
-    Vector(1, 2),
-    Vector(-2, -1),
-  ],
-  'L0': [
-    Vector.zero,
-    Vector(-2, 0),
-    Vector(1, 0),
-    Vector(-2, 1),
-    Vector(1, -2),
-  ],
-  '0L': [
-    Vector.zero,
-    Vector(2, 0),
-    Vector(-1, 0),
-    Vector(-1, 2),
-    Vector(2, -1),
-  ],
+const _oOffsetData = {
+  '0': [Vector.zero],
+  'R': [Vector(0, -1)],
+  '2': [Vector(-1, -1)],
+  'L': [Vector(-1, 0)],
 };
