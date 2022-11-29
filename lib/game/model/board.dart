@@ -31,15 +31,15 @@ class Board extends ChangeNotifier {
 
   Vector get cursor => _cursor;
 
-  int _clearedRows = 0;
+  int _clearedLines = 0;
 
-  int get clearedLines => _clearedRows;
+  int get clearedLines => _clearedLines;
 
   Board()
       : currentPiece = Piece.empty(),
         _blocked = [],
         _cursor = Vector.zero {
-    moveTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
+    gameTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
       if (isBlockOut()) {
         moveTimer?.cancel();
         startGame();
@@ -162,7 +162,7 @@ class Board extends ChangeNotifier {
         debugPrint('Cleared row $yp');
       }
     }
-    _clearedRows += clearedRows;
+    _clearedLines += clearedRows;
     _blocked
       ..clear()
       ..addAll(occupied);
@@ -189,7 +189,7 @@ class Board extends ChangeNotifier {
     _blocked
       ..clear()
       ..addAll(getPredefinedBlockedTiles());
-    _clearedRows = 0;
+    _clearedLines = 0;
     holdPiece = null;
   }
 

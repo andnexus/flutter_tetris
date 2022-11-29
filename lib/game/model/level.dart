@@ -1,6 +1,14 @@
-const _frameRate = 60;
+class Level {
+  final int id;
+  final Duration speed;
+
+  Level(this.id, this.speed);
+}
+
+Level getLevel(int rows) => _level[_getLevelIndex(rows)];
 
 /// https://harddrop.com/wiki/Tetris_(Game_Boy)
+const _frameRate = 60;
 const _levelFrameRate = [
   53,
   49,
@@ -49,22 +57,18 @@ final _levelSpeed = [
   _levelFrameRate[20] / _frameRate,
 ];
 
-final _level = _levelSpeed
-    .map((e) => Level(
-        _levelSpeed.indexOf(e) + 1, Duration(milliseconds: (e * 1000).round())))
-    .toList();
+final _level = List.generate(
+    _levelSpeed.length,
+    (index) => Level(
+        index + 1,
+        Duration(
+          milliseconds: (_levelSpeed[index] * 1000).round(),
+        )));
 
-Level getLevel(int rows) {
+int _getLevelIndex(int rows) {
   var level = (rows - rows % 10) ~/ 10;
   if (level >= _level.length) {
     level = _level.length - 1;
   }
-  return _level[level];
-}
-
-class Level {
-  final int id;
-  final Duration speed;
-
-  Level(this.id, this.speed);
+  return level;
 }
