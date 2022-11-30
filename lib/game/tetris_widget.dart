@@ -248,8 +248,8 @@ class TouchDetector extends StatefulWidget {
 }
 
 class _TouchDetectorState extends State<TouchDetector> {
-  static const _thresholdPosition = 20;
-  static const _thresholdVelocity = 1500;
+  static const _thresholdGlobalPositionDistance = 20;
+  static const _thresholdSwipeVelocity = 1000;
   late Offset _initialOffset;
   late Offset _finalOffset;
 
@@ -274,14 +274,14 @@ class _TouchDetectorState extends State<TouchDetector> {
 
     // vertical
     final offsetDifferenceY = initialOffset.dy - finalOffset.dy;
-    if (offsetDifferenceY.abs() > _thresholdPosition) {
+    if (offsetDifferenceY.abs() > _thresholdGlobalPositionDistance) {
       _initialOffset = _finalOffset;
       widget.onTouch(details.delta.dy < 0 ? TouchAction.up : TouchAction.down);
     }
 
     // horizontal
     final offsetDifferenceX = initialOffset.dx - finalOffset.dx;
-    if (offsetDifferenceX.abs() > _thresholdPosition) {
+    if (offsetDifferenceX.abs() > _thresholdGlobalPositionDistance) {
       _initialOffset = _finalOffset;
       widget
           .onTouch(details.delta.dx < 0 ? TouchAction.left : TouchAction.right);
@@ -290,10 +290,10 @@ class _TouchDetectorState extends State<TouchDetector> {
 
   void onPanEnd(DragEndDetails details) {
     // vertical
-    if (details.velocity.pixelsPerSecond.dy > _thresholdVelocity) {
+    if (details.velocity.pixelsPerSecond.dy > _thresholdSwipeVelocity) {
       widget.onTouch(TouchAction.downEnd);
     }
-    if (details.velocity.pixelsPerSecond.dy < -_thresholdVelocity) {
+    if (details.velocity.pixelsPerSecond.dy < -_thresholdSwipeVelocity) {
       widget.onTouch(TouchAction.upEnd);
     }
   }

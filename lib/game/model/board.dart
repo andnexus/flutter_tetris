@@ -193,6 +193,7 @@ class Board extends ChangeNotifier {
     holdPiece = null;
   }
 
+  /// https://harddrop.com/wiki/Top_out
   bool isBlockOut() => _blocked.where((e) => e.y == y - 1).isNotEmpty;
 
   // Map grid tile index to a vector.
@@ -264,12 +265,12 @@ class Board extends ChangeNotifier {
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
       // empty
-      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      //[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 
       // clear rows test
       //[1, 1, 1, 1, 1, 1, 1, 0, 0, 1],

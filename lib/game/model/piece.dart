@@ -70,8 +70,13 @@ class Piece {
     final toOffsets = offsets['${_nextRotation(from, clockwise)}'];
     final result = <Vector>[];
     for (var index = 0; index < fromOffsets!.length + 1; index++) {
-      result.add(fromOffsets[index % fromOffsets.length] -
-          toOffsets![index % toOffsets.length]);
+      final fromOffset = fromOffsets[index % fromOffsets.length];
+      final toOffset = toOffsets![index % toOffsets.length];
+      if (clockwise) {
+        result.add(fromOffset - toOffset);
+      } else {
+        result.add(toOffset - fromOffset);
+      }
     }
     return result;
   }
