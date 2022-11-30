@@ -72,7 +72,8 @@ class Piece {
     for (var index = 0; index < fromOffsets!.length + 1; index++) {
       final fromOffset = fromOffsets[index % fromOffsets.length];
       final toOffset = toOffsets![index % toOffsets.length];
-      if (clockwise) {
+      if (clockwise || fromOffsets.length == 1) {
+        // o piece
         result.add(fromOffset - toOffset);
       } else {
         result.add(toOffset - fromOffset);

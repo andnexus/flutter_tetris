@@ -112,7 +112,7 @@ class Board extends ChangeNotifier {
       if (canMove(kick)) {
         _cursor += kick;
       }
-      debugPrint('$from${currentPiece.rotation} rotated with first kick');
+      debugPrint('$from${currentPiece.rotation} rotated with first kick $kick');
       _notify();
       return true;
     } else {
