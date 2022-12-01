@@ -1,32 +1,30 @@
 name: Publish
-on: [ push ]
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build:
+    uses: ./.github/workflows/flutter.yml
+    with:
+      commands: "[ 'flutter build web --base-href /flutter_tetris/' ]"
+      path: 'build/web'
+
+  deploy:
     permissions:
       contents: read
       pages: write
       id-token: write
-
-    concurrency:
-      group: "pages"
-      cancel-in-progress: true
-
+    needs:
+      - build
     runs-on: ubuntu-latest
+    name: Deploy
     steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: 'stable'
-          flutter-version: '3.3.9'
-      - run: flutter pub get
-      - name: Build Flutter web app
-        run: flutter build web --base-href "/flutter_tetris/"
-      - name: Setup Pages
-        uses: actions/configure-pages@v2
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: 'build/web'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1

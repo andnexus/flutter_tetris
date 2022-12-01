@@ -1,0 +1,39 @@
+name: 'Flutter'
+on:
+  workflow_call:
+    inputs:
+      commands:
+        required: true
+        type: string
+      path:
+        default: ''
+        required: false
+        type: string
+
+env:
+  FLUTTER_VERSION: '3.3.9'
+  FLUTTER_CHANNEL: 'stable' # 'dev', 'alpha'
+  BUILD_PATH: 'build'
+
+jobs:
+  flutter:
+    strategy:
+      matrix:
+        command: ${{ fromJson(inputs.commands) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - run: flutter pub get
+      - name: Commands
+        run: |
+          exec ${{ matrix.command }}
+      - run: echo "${{ inputs.path }}"
+      - name: Archive
+        if: inputs.path != ''
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${{ inputs.path }}
