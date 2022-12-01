@@ -1,0 +1,74 @@
+name: Pipeline
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: [$default-branch]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.3.9"
+  FLUTTER_CHANNEL: "stable" # 'dev', 'alpha', default to: 'stable'
+  BUILD_PATH: "build"
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - run: flutter pub get
+      - run: flutter format --set-exit-if-changed .
+      - run: flutter analyze
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - run: flutter pub get
+      - name: Run tests
+        run: flutter test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - run: flutter pub get
+      - name: Build Flutter web app
+        run: flutter build web --base-href "/flutter_tetris/"
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${{ env.BUILD_PATH }}/web
+
+  deploy:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    needs:
+      - analyze
+      - test
+      - build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1

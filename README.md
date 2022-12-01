@@ -1,6 +1,4 @@
-[![Check](https://github.com/andnexus/flutter_tetris/actions/workflows/check.yml/badge.svg)](https://github.com/andnexus/flutter_tetris/actions/workflows/check.yml)
-[![Test](https://github.com/andnexus/flutter_tetris/actions/workflows/test.yml/badge.svg)](https://github.com/andnexus/flutter_tetris/actions/workflows/test.yml)
-[![Publish](https://github.com/andnexus/flutter_tetris/actions/workflows/publish.yml/badge.svg)](https://github.com/andnexus/flutter_tetris/actions/workflows/publish.yml)
+[![Pipeline](https://github.com/andnexus/flutter_tetris/actions/workflows/pipeline.yml/badge.svg)](https://github.com/andnexus/flutter_tetris/actions/workflows/pipeline.yml)
 
 # Tetris for Flutter
 
