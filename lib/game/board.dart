@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tetris/game/model/level.dart';
-import 'package:tetris/game/model/piece.dart';
-import 'package:tetris/game/model/rotation.dart';
-import 'package:tetris/game/model/vector.dart';
-import 'package:tetris/game/tetris_widget.dart';
+import 'package:tetris/game/level.dart';
+import 'package:tetris/game/piece.dart';
+import 'package:tetris/game/rotation.dart';
+import 'package:tetris/game/tetris.dart';
+import 'package:tetris/game/vector.dart';
 
 class Board extends ChangeNotifier {
   static const Duration lockDelayTime = Duration(seconds: 1);

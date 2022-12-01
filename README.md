@@ -6,7 +6,8 @@
 
 [Tetris](https://harddrop.com/wiki/Gameplay_overview) implementation
 with [SRS](https://harddrop.com/wiki/SRS)
-and [wall kicks](https://harddrop.com/wiki/SRS#Wall_Kicks).
+and [wall kicks](https://harddrop.com/wiki/SRS#Wall_Kicks)
+. [Play it](https://andnexus.github.io/flutter_tetris/) on GitHub Pages.
 
 [![gameplay](assets/tetris.gif)](https://andnexus.github.io/flutter_tetris/)
 

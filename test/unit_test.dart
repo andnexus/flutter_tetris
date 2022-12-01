@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tetris/game/model/vector.dart';
+import 'package:tetris/game/vector.dart';
 
 void main() {
   group('Unit tests', () {

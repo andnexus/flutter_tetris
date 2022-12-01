@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tetris/game/model/board.dart';
-import 'package:tetris/game/model/level.dart';
-import 'package:tetris/game/model/piece.dart';
-import 'package:tetris/game/model/vector.dart';
+import 'package:tetris/game/board.dart';
+import 'package:tetris/game/level.dart';
+import 'package:tetris/game/piece.dart';
+import 'package:tetris/game/vector.dart';
 
-class TetrisWidget extends StatelessWidget {
-  const TetrisWidget({super.key});
+class Tetris extends StatelessWidget {
+  const Tetris({super.key});
 
   @override
   Widget build(BuildContext context) => TouchDetector(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tetris/game/model/board.dart';
-import 'package:tetris/game/tetris_widget.dart';
+import 'package:tetris/game/board.dart';
+import 'package:tetris/game/tetris.dart';
 
 void main() {
   runApp(const App());
@@ -20,7 +20,7 @@ class App extends StatelessWidget {
             dividerTheme: const DividerThemeData(thickness: 1),
           ),
           debugShowCheckedModeBanner: false,
-          home: const TetrisWidget(),
+          home: const Tetris(),
         ),
       );
 }
