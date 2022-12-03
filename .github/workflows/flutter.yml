@@ -9,10 +9,6 @@ on:
         default: ''
         required: false
         type: string
-      coveragePath:
-        default: ''
-        required: false
-        type: string
 
 jobs:
   flutter:
@@ -36,9 +32,3 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: ${{ inputs.pagesPath }}
-      - name: Code Coverage Report
-        if: inputs.coveragePath != ''
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-          filename: ${{ inputs.coveragePath }}
-          badge: true
