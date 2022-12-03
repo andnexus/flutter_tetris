@@ -26,6 +26,7 @@ jobs:
           flutter-version: '3.3.9'
       - name: Command 💙
         run: |
+          apt-get -y install lcov;
           bash -c ${{ matrix.command }}
       - name: Archive
         if: inputs.pagesPath != ''

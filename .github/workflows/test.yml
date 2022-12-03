@@ -9,4 +9,4 @@ jobs:
   test:
     uses: ./.github/workflows/flutter.yml
     with:
-      commands: "[ 'flutter format --set-exit-if-changed .', 'flutter analyze', 'apt-get -y install lcov; flutter test --coverage && lcov --summary coverage/lcov.info' ]"
+      commands: "[ 'flutter format --set-exit-if-changed .', 'flutter analyze', 'flutter test --coverage && lcov --summary coverage/lcov.info' ]"
