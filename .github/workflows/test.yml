@@ -10,4 +10,4 @@ jobs:
     uses: ./.github/workflows/flutter.yml
     with:
       commands: "[ 'dart pub global activate cobertura && flutter test --machine --coverage && cobertura convert -i coverage/lcov.info -o coverage/cobertura-coverage.xml' ]"
-      coveragePath: "./coverage/cobertura-coverage.xml"
+      coveragePath: "coverage/cobertura-coverage.xml"

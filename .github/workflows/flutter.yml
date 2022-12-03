@@ -41,4 +41,3 @@ jobs:
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: ${{ inputs.coveragePath }}
-          badge: true
