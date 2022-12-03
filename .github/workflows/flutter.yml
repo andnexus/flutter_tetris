@@ -19,11 +19,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      # name: Flutter setup
-      # uses: subosito/flutter-action@v2
-      # with:
-      #   channel: 'stable' # 'dev', 'alpha'
-      #   flutter-version: '3.3.9'
+      - name: Flutter setup
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # 'dev', 'alpha'
+          flutter-version: '3.3.9'
       - name: Command 💙
         run: |
           sudo apt-get -y install lcov;
