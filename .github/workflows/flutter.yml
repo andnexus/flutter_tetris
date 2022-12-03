@@ -5,7 +5,11 @@ on:
       commands:
         required: true
         type: string
-      path:
+      pagesPath:
+        default: ''
+        required: false
+        type: string
+      coveragePath:
         default: ''
         required: false
         type: string
@@ -28,7 +32,12 @@ jobs:
         run: |
           exec ${{ matrix.command }}
       - name: Archive
-        if: inputs.path != ''
+        if: inputs.pagesPath != ''
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ${{ inputs.path }}
+          path: ${{ inputs.pagesPath }}
+      - name: Coverage
+        if: inputs.coveragePath != ''
+        uses: romeovs/lcov-reporter-action@v0.2.16
+        with:
+          lcov-file:  ${{ inputs.coveragePath }}

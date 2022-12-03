@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/flutter.yml
     with:
       commands: "[ 'flutter build web --base-href /flutter_tetris/' ]"
-      path: 'build/web'
+      pagesPath: 'build/web'
 
   deploy:
     permissions:
