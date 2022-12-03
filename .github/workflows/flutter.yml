@@ -17,13 +17,14 @@ jobs:
         command: ${{ fromJson(inputs.commands) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Flutter setup
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable' # 'dev', 'alpha'
           flutter-version: '3.3.9'
-      - run: flutter pub get
-      - name: Commands 💙
+      - name: Command 💙
         run: |
           exec ${{ matrix.command }}
       - name: Archive
