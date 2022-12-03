@@ -9,4 +9,4 @@ jobs:
   test:
     uses: ./.github/workflows/flutter.yml
     with:
-      commands: "[ 'flutter format --set-exit-if-changed .', 'flutter analyze', 'flutter test --coverage && lcov --summary coverage/lcov.info | grep \"/lines\.*: \d+\.\d+\%/\"' ]"
+      commands: "[ 'flutter format --set-exit-if-changed .', 'flutter analyze', 'flutter test --coverage && lcov --summary coverage/lcov.info | grep \'/lines\.*: \d+\.\d+\%/\'' ]"
