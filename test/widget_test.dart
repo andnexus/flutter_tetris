@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tetris/main.dart';
 
 void main() {
   group('Widget tests.', () {
     testWidgets('Find text', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: Text('foo')));
+      await tester.pumpWidget(const App());
       await tester.pumpAndSettle();
-      expect(find.text('foo'), findsOneWidget);
+      expect(find.text('HOLD'), findsOneWidget);
     });
   });
 }

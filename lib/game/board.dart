@@ -54,6 +54,13 @@ class Board extends ChangeNotifier {
     startGame();
   }
 
+  @override
+  void dispose() {
+    gameTimer?.cancel();
+    moveTimer?.cancel();
+    super.dispose();
+  }
+
   void startMoveTimer() {
     moveTimer = Timer.periodic(getLevel(clearedLines).speed, (timer) {
       move(const Vector(0, -1));
