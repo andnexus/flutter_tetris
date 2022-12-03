@@ -36,8 +36,9 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: ${{ inputs.pagesPath }}
-      - name: Coverage
+      - name: Code Coverage Report
         if: inputs.coveragePath != ''
-        uses: romeovs/lcov-reporter-action@v0.2.16
+        uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          lcov-file:  ${{ inputs.coveragePath }}
+          filename: ${{ inputs.coveragePath }}
+          badge: true

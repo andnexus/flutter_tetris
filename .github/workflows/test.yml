@@ -9,5 +9,5 @@ jobs:
   test:
     uses: ./.github/workflows/flutter.yml
     with:
-      commands: "[ 'flutter format --set-exit-if-changed .', 'flutter analyze', 'flutter test --machine --coverage' ]"
-      coveragePath: "./coverage/lcov.info"
+      commands: "[ 'dart pub global activate cobertura; flutter test --machine --coverage; cobertura convert -i coverage/lcov.info -o coverage/cobertura-coverage.xml;' ]"
+      coveragePath: "./coverage/cobertura-coverage.xml"
