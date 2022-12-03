@@ -26,7 +26,7 @@ jobs:
           flutter-version: '3.3.9'
       - name: Command 💙
         run: |
-          exec ${{ matrix.command }}
+          bash -c ${{ matrix.command }}
       - name: Archive
         if: inputs.pagesPath != ''
         uses: actions/upload-pages-artifact@v1
