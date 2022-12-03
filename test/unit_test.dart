@@ -7,6 +7,9 @@ void main() {
       test('Addition', () async {
         expect(const Vector(1, 1) + const Vector(1, 1), const Vector(2, 2));
       });
+      test('Subtraction', () async {
+        expect(const Vector(1, 1) - const Vector(1, 1), Vector.zero);
+      });
     });
   });
 }
