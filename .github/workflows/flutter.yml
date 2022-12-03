@@ -23,7 +23,7 @@ jobs:
           channel: 'stable' # 'dev', 'alpha'
           flutter-version: '3.3.9'
       - run: flutter pub get
-      - name: Commands
+      - name: Commands 💙
         run: |
           exec ${{ matrix.command }}
       - name: Archive
