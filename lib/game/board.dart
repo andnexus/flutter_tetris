@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:tetris/game/level.dart';
 import 'package:tetris/game/piece.dart';
@@ -13,8 +12,7 @@ class Board extends ChangeNotifier {
   static const int x = 10;
   static const int y = 2 * x;
 
-  Timer? gameTimer;
-  Timer? moveTimer;
+  Ticker? _ticker;
   int lastMovedTime = 0;
 
   final List<Vector> _blocked;
@@ -35,36 +33,35 @@ class Board extends ChangeNotifier {
 
   int get clearedLines => _clearedLines;
 
-  Board()
+  Board(TickerProvider tickerProvider)
       : currentPiece = Piece.empty(),
         _blocked = [],
         _cursor = Vector.zero {
-    gameTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
-      if (isBlockOut()) {
-        moveTimer?.cancel();
-        startGame();
-      } else if (!canMove(const Vector(0, -1)) && isLockDelayExpired()) {
-        moveTimer?.cancel();
-        merge();
-        clearRows();
-        spawn();
-        startMoveTimer();
-      }
-    });
+    _ticker = tickerProvider.createTicker(onTick);
+    _ticker?.start();
     startGame();
+  }
+
+  int ticks = 0;
+
+  void onTick(Duration elapsed) {
+    if (ticks % getLevel(clearedLines).speed == 0) {
+      move(const Vector(0, -1));
+    }
+    if (isBlockOut()) {
+      startGame();
+    } else if (!canMove(const Vector(0, -1)) && isLockDelayExpired()) {
+      merge();
+      clearRows();
+      spawn();
+    }
+    ticks++;
   }
 
   @override
   void dispose() {
-    gameTimer?.cancel();
-    moveTimer?.cancel();
+    _ticker?.stop(canceled: true);
     super.dispose();
-  }
-
-  void startMoveTimer() {
-    moveTimer = Timer.periodic(getLevel(clearedLines).speed, (timer) {
-      move(const Vector(0, -1));
-    });
   }
 
   bool isLockDelayExpired() =>
@@ -78,7 +75,6 @@ class Board extends ChangeNotifier {
 
   void startGame() {
     reset();
-    startMoveTimer();
   }
 
   bool isOccupied(Vector v) => _blocked.contains(v);
@@ -348,7 +344,6 @@ class Board extends ChangeNotifier {
         hardDrop();
       } else if (event.logicalKey == LogicalKeyboardKey.escape) {
         _nextPieces.clear();
-        moveTimer?.cancel();
         startGame();
       }
     }
