@@ -12,30 +12,26 @@ class Tetris extends StatelessWidget {
   Widget build(BuildContext context) => TouchDetector(
         onTapUp: (details) => context.read<Board>().onTapUp(context, details),
         onTouch: context.read<Board>().onTouch,
-        child: Scaffold(
-          body: SafeArea(
-            child: Focus(
-              onKey: context.read<Board>().onKey,
-              autofocus: true,
-              child: Scaffold(
-                body: SafeArea(
-                  child: Center(
-                    child: AspectRatio(
-                      aspectRatio: 1 / 2,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: const [
-                              LeftPanelView(),
-                              BoardView(),
-                              RightPanelView(),
-                            ],
-                          ),
-                          const SizedBox(height: 100),
+        child: Focus(
+          onKey: context.read<Board>().onKey,
+          autofocus: true,
+          child: Scaffold(
+            body: SafeArea(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: 1 / 2,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: const [
+                          LeftPanelView(),
+                          BoardView(),
+                          RightPanelView(),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 100),
+                    ],
                   ),
                 ),
               ),
@@ -104,9 +100,7 @@ class BoardView extends StatelessWidget {
     final tiles = context.watch<Board>().getTiles();
     final dividerThickness = Theme.of(context).dividerTheme.thickness!;
     final dividerColor = Theme.of(context).dividerColor;
-    return Flexible(
-      flex: 6,
-      fit: FlexFit.tight,
+    return Expanded(
       child: Container(
         decoration: BoxDecoration(
           color: dividerColor,
