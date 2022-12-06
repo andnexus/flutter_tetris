@@ -7,12 +7,17 @@ void main() {
   runApp(const App());
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
 
   @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> with TickerProviderStateMixin {
+  @override
   Widget build(BuildContext context) => ChangeNotifierProvider(
-        create: (context) => Board(),
+        create: (context) => Board(this),
         child: MaterialApp(
           theme: ThemeData(brightness: Brightness.dark).copyWith(
             scaffoldBackgroundColor: const Color(0xFF000000),

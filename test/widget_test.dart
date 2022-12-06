@@ -5,7 +5,7 @@ void main() {
   group('Widget tests.', () {
     testWidgets('Find text', (tester) async {
       await tester.pumpWidget(const App());
-      await tester.pumpAndSettle();
+      await tester.idle();
       expect(find.text('HOLD'), findsOneWidget);
     });
   });
