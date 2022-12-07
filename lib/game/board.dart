@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:tetris/game/level.dart';
 import 'package:tetris/game/piece.dart';
 import 'package:tetris/game/rotation.dart';
-import 'package:tetris/game/tetris.dart';
+import 'package:tetris/game/touch.dart';
 import 'package:tetris/game/vector.dart';
 
 class Board extends ChangeNotifier {
@@ -77,7 +77,7 @@ class Board extends ChangeNotifier {
     reset();
   }
 
-  bool isOccupied(Vector v) => _blocked.contains(v);
+  bool isBlocked(Vector v) => _blocked.contains(v);
 
   bool isCurrentPieceTile(Vector v) => currentPiece.tiles.contains(v - _cursor);
 
@@ -152,23 +152,23 @@ class Board extends ChangeNotifier {
 
   void clearRows() {
     var clearedRows = 0;
-    var occupied = List.of(_blocked);
+    var blocked = List.of(_blocked);
     for (var yp = y - 1; yp >= 0; yp--) {
       final result = _blocked.where((element) => element.y == yp);
       if (result.length == x) {
         clearedRows++;
-        final belowVectors = occupied.where((element) => element.y < yp);
-        final aboveVectors = occupied
+        final belowVectors = blocked.where((element) => element.y < yp);
+        final aboveVectors = blocked
             .where((element) => element.y > yp)
             .map((e) => e + const Vector(0, -1));
-        occupied = [...belowVectors, ...aboveVectors];
+        blocked = [...belowVectors, ...aboveVectors];
         debugPrint('Cleared row $yp');
       }
     }
     _clearedLines += clearedRows;
     _blocked
       ..clear()
-      ..addAll(occupied);
+      ..addAll(blocked);
   }
 
   void hold() {
@@ -221,30 +221,18 @@ class Board extends ChangeNotifier {
         .contains(v - _cursor - offset - const Vector(0, 1));
   }
 
-  Widget _getTile(Vector vector) {
-    if (isOccupied(vector)) {
-      return Container(color: Colors.grey);
+  Tile _getTile(Vector vector) {
+    if (isBlocked(vector)) {
+      return Tile.blocked;
     } else if (isCurrentPieceTile(vector)) {
-      return Container(color: currentPiece.color);
+      return Tile.piece;
     } else if (isGhostTile(vector)) {
-      return Container(
-        color: Colors.black,
-        padding: const EdgeInsets.all(1),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black,
-            border: Border.all(
-              color: Colors.grey,
-              width: 1,
-            ),
-          ),
-        ),
-      );
+      return Tile.ghost;
     }
-    return Container(color: Colors.black);
+    return Tile.blank;
   }
 
-  List<Widget> getTiles() => List.generate(
+  List<Tile> getTiles() => List.generate(
       Board.x * Board.y, (index) => _getTile(_tileVectorFromIndex(index)));
 
   static List<Vector> getPredefinedBlockedTiles() {
@@ -380,3 +368,5 @@ class Board extends ChangeNotifier {
     }
   }
 }
+
+enum Tile { blank, blocked, piece, ghost }

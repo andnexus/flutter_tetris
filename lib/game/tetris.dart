@@ -3,10 +3,26 @@ import 'package:provider/provider.dart';
 import 'package:tetris/game/board.dart';
 import 'package:tetris/game/level.dart';
 import 'package:tetris/game/piece.dart';
+import 'package:tetris/game/touch.dart';
 import 'package:tetris/game/vector.dart';
 
-class Tetris extends StatelessWidget {
-  const Tetris({super.key});
+class Tetris extends StatefulWidget {
+  const Tetris({Key? key}) : super(key: key);
+
+  @override
+  State<Tetris> createState() => _TetrisState();
+}
+
+class _TetrisState extends State<Tetris> with TickerProviderStateMixin {
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+        create: (context) => Board(this),
+        child: const TetrisView(),
+      );
+}
+
+class TetrisView extends StatelessWidget {
+  const TetrisView({super.key});
 
   @override
   Widget build(BuildContext context) => TouchDetector(
@@ -17,23 +33,13 @@ class Tetris extends StatelessWidget {
           autofocus: true,
           child: Scaffold(
             body: SafeArea(
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: 1 / 2,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: const [
-                          LeftPanelView(),
-                          BoardView(),
-                          RightPanelView(),
-                        ],
-                      ),
-                      const SizedBox(height: 100),
-                    ],
-                  ),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  LeftView(),
+                  CenterView(),
+                  RightView(),
+                ],
               ),
             ),
           ),
@@ -41,254 +47,219 @@ class Tetris extends StatelessWidget {
       );
 }
 
-class LeftPanelView extends StatelessWidget {
-  const LeftPanelView({super.key});
+class LeftView extends StatelessWidget {
+  const LeftView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final hold = context.watch<Board>().holdPiece;
-    final cleared = context.select<Board, int>((value) => value.clearedLines);
-    final level = getLevel(cleared);
+    final piece = context.select<Board, Piece?>((value) => value.holdPiece);
+    final lines = context.select<Board, int>((value) => value.clearedLines);
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
       children: [
         PanelView(
-          index: 0,
-          items: [
-            const PanelText('HOLD'),
-            if (hold != null) PreviewPieceView(piece: hold),
-          ],
+          topRight: false,
+          bottomRight: false,
+          child: Column(
+            children: [const Text('HOLD'), PieceView(piece: piece)],
+          ),
         ),
-        const SizedBox(height: 70),
+        const SizedBox(height: 50),
         PanelView(
-          index: 0,
-          items: [
-            const PanelText('LEVEL'),
-            PanelText('${level.id}'),
-            const PanelText('LINES'),
-            PanelText('$cleared'),
-          ],
+          topRight: false,
+          bottomRight: false,
+          child: Column(
+            children: [
+              const Text('LEVEL'),
+              Text('${getLevel(lines).id}'),
+              const SizedBox(height: 10),
+              const Text('LINES'),
+              Text('$lines'),
+            ],
+          ),
         ),
       ],
     );
   }
 }
 
-class RightPanelView extends StatelessWidget {
-  const RightPanelView({super.key});
+class CenterView extends StatelessWidget {
+  const CenterView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+      padding: EdgeInsets.only(top: 100, bottom: 200),
+      child: PanelView(child: BoardView()));
+}
+
+class RightView extends StatelessWidget {
+  const RightView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final pieces = context.watch<Board>().nextPieces;
-    return PanelView(
-      index: 2,
-      items: [
-        const PanelText('NEXT'),
-        ...List.generate(3, (i) => PreviewPieceView(piece: pieces[i])),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        PanelView(
+          topLeft: false,
+          bottomLeft: false,
+          child: Column(
+            children: [
+              const Text('NEXT'),
+              ...pieces.take(3).map((p) => PieceView(piece: p))
+            ],
+          ),
+        ),
       ],
     );
   }
 }
 
 class BoardView extends StatelessWidget {
-  static const borderRadius = 10.0;
+  static const _thickness = 1.0;
 
   const BoardView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final tiles = context.watch<Board>().getTiles();
-    final dividerThickness = Theme.of(context).dividerTheme.thickness!;
     final dividerColor = Theme.of(context).dividerColor;
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: dividerColor,
-          border: Border.all(
-            color: dividerColor,
-            width: borderRadius,
-          ),
-          borderRadius: BorderRadius.circular(borderRadius),
-        ),
-        child: GridView.count(
-          crossAxisCount: Board.x,
-          mainAxisSpacing: dividerThickness,
-          crossAxisSpacing: dividerThickness,
-          primary: false,
-          shrinkWrap: true,
-          children: tiles,
-        ),
+
+    return Container(
+      decoration: BoxDecoration(
+        color: dividerColor,
+        border: Border.all(color: dividerColor, width: _thickness),
+        borderRadius: const BorderRadius.all(Radius.circular(_thickness)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final halfHeight = constraints.maxHeight / 2;
+          final tileDimension = constraints.maxWidth < halfHeight
+              ? (constraints.maxWidth ~/ Board.x - _thickness)
+              : (halfHeight ~/ Board.x - _thickness);
+          final width = tileDimension * Board.x + _thickness * Board.x;
+          final height = tileDimension * Board.y + _thickness * Board.y;
+          final gridSize = Size(width, height);
+          return SizedBox.fromSize(
+            size: gridSize,
+            child: Center(
+              child: Wrap(
+                spacing: _thickness,
+                runSpacing: _thickness,
+                direction: Axis.horizontal,
+                children: tiles.map((e) {
+                  BoxDecoration decoration;
+                  switch (e) {
+                    case Tile.blank:
+                      decoration = const BoxDecoration(color: Colors.black);
+                      break;
+                    case Tile.blocked:
+                      decoration = const BoxDecoration(color: Colors.grey);
+                      break;
+                    case Tile.piece:
+                      final color = context.read<Board>().currentPiece.color;
+                      decoration = BoxDecoration(color: color);
+                      break;
+                    case Tile.ghost:
+                      decoration = BoxDecoration(
+                        color: Colors.black,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: _thickness,
+                        ),
+                      );
+                      break;
+                  }
+                  return Container(
+                      height: tileDimension,
+                      width: tileDimension,
+                      decoration: decoration);
+                }).toList(),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
+}
+
+class PieceView extends StatelessWidget {
+  final Piece? piece;
+
+  const PieceView({required this.piece, super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        constraints: const BoxConstraints(minHeight: 30),
+        child: piece != null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  piece!.height,
+                  (y) => Row(
+                    children: List.generate(
+                      piece!.width,
+                      (x) => SizedBox.fromSize(
+                        size: const Size(5, 5),
+                        child: Container(
+                            color: piece!.tiles
+                                    .where((element) => element == Vector(x, y))
+                                    .isEmpty
+                                ? Colors.transparent
+                                : Colors.white),
+                      ),
+                    ),
+                  ),
+                ).reversed.toList(),
+              )
+            : const SizedBox.shrink(),
+      );
 }
 
 class PanelView extends StatelessWidget {
-  static const _borderRadius = 10.0;
+  static const _thickness = 10.0;
 
-  final List<Widget> items;
+  final Widget child;
 
-  final int index;
+  final bool topLeft;
 
-  const PanelView({required this.index, required this.items, super.key});
+  final bool bottomLeft;
+
+  final bool topRight;
+
+  final bool bottomRight;
+
+  const PanelView({
+    super.key,
+    required this.child,
+    this.topLeft = true,
+    this.bottomLeft = true,
+    this.topRight = true,
+    this.bottomRight = true,
+  });
 
   @override
   Widget build(BuildContext context) {
-    BorderRadius borderRadius;
-    switch (index) {
-      case 0:
-        borderRadius = const BorderRadius.only(
-          topLeft: Radius.circular(_borderRadius),
-          bottomLeft: Radius.circular(_borderRadius),
-        );
-        break;
-      case 2:
-        borderRadius = const BorderRadius.only(
-          topRight: Radius.circular(_borderRadius),
-          bottomRight: Radius.circular(_borderRadius),
-        );
-        break;
-      default:
-        borderRadius = BorderRadius.zero;
-    }
-    return SizedBox(
-      width: 60,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 75),
-        decoration: BoxDecoration(
-          color: Theme.of(context).dividerColor,
-          border: Border.all(
-            color: Theme.of(context).dividerColor,
-            width: _borderRadius,
-          ),
-          borderRadius: borderRadius,
-        ),
-        child: ListView(
-          shrinkWrap: true,
-          primary: false,
-          children: items
-              .map((e) => Center(
-                  child: Container(
-                      constraints: const BoxConstraints(minHeight: 25),
-                      child: e)))
-              .toList(),
-        ),
-      ),
+    final dividerColor = Theme.of(context).dividerColor;
+    const radius = Radius.circular(_thickness);
+    return Container(
+      constraints: const BoxConstraints(minWidth: 60),
+      decoration: BoxDecoration(
+          color: dividerColor,
+          border: Border.all(color: dividerColor, width: _thickness),
+          borderRadius: BorderRadius.only(
+            topLeft: topLeft ? radius : Radius.zero,
+            bottomLeft: bottomLeft ? radius : Radius.zero,
+            topRight: topRight ? radius : Radius.zero,
+            bottomRight: bottomRight ? radius : Radius.zero,
+          )),
+      child: child,
     );
-  }
-}
-
-class PreviewPieceView extends StatelessWidget {
-  final Piece piece;
-
-  const PreviewPieceView({
-    required this.piece,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) => Column(
-        children: List.generate(
-          piece.height,
-          (y) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              piece.width,
-              (x) => Container(
-                  height: 5,
-                  width: 5,
-                  color: piece.tiles
-                          .where((element) => element == Vector(x, y))
-                          .isEmpty
-                      ? Colors.transparent
-                      : Colors.white),
-            ),
-          ),
-        ).reversed.toList(),
-      );
-}
-
-class PanelText extends StatelessWidget {
-  final String text;
-
-  const PanelText(this.text, {super.key});
-
-  @override
-  Widget build(BuildContext context) => Text(text,
-      style: Theme.of(context)
-          .textTheme
-          .bodyText1!
-          .copyWith(fontSize: 10, fontWeight: FontWeight.bold));
-}
-
-enum TouchAction { right, left, up, down, upEnd, downEnd }
-
-typedef TouchCallback = void Function(TouchAction action);
-
-class TouchDetector extends StatefulWidget {
-  final Widget child;
-  final TouchCallback onTouch;
-  final GestureTapUpCallback onTapUp;
-
-  const TouchDetector({
-    super.key,
-    required this.child,
-    required this.onTapUp,
-    required this.onTouch,
-  });
-
-  @override
-  State<TouchDetector> createState() => _TouchDetectorState();
-}
-
-class _TouchDetectorState extends State<TouchDetector> {
-  static const _thresholdGlobalPositionDistance = 20;
-  static const _thresholdSwipeVelocity = 1000;
-  late Offset _initialOffset;
-  late Offset _finalOffset;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTapUp: widget.onTapUp,
-        onPanStart: onPanStart,
-        onPanUpdate: onPanUpdate,
-        onPanEnd: onPanEnd,
-        child: widget.child,
-      );
-
-  void onPanStart(DragStartDetails details) {
-    _initialOffset = details.globalPosition;
-  }
-
-  void onPanUpdate(DragUpdateDetails details) {
-    _finalOffset = details.globalPosition;
-
-    final initialOffset = _initialOffset;
-    final finalOffset = _finalOffset;
-
-    // vertical
-    final offsetDifferenceY = initialOffset.dy - finalOffset.dy;
-    if (offsetDifferenceY.abs() > _thresholdGlobalPositionDistance) {
-      _initialOffset = _finalOffset;
-      widget.onTouch(details.delta.dy < 0 ? TouchAction.up : TouchAction.down);
-    }
-
-    // horizontal
-    final offsetDifferenceX = initialOffset.dx - finalOffset.dx;
-    if (offsetDifferenceX.abs() > _thresholdGlobalPositionDistance) {
-      _initialOffset = _finalOffset;
-      widget
-          .onTouch(details.delta.dx < 0 ? TouchAction.left : TouchAction.right);
-    }
-  }
-
-  void onPanEnd(DragEndDetails details) {
-    // vertical
-    if (details.velocity.pixelsPerSecond.dy > _thresholdSwipeVelocity) {
-      widget.onTouch(TouchAction.downEnd);
-    }
-    if (details.velocity.pixelsPerSecond.dy < -_thresholdSwipeVelocity) {
-      widget.onTouch(TouchAction.upEnd);
-    }
   }
 }
