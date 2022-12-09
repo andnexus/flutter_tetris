@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tetris/game/board.dart';
@@ -31,24 +33,22 @@ class TetrisView extends StatelessWidget {
         child: Focus(
           onKey: context.read<Board>().onKey,
           autofocus: true,
-          child: LayoutBuilder(
-              builder: (context, constraints) => Scaffold(
-                    body: SafeArea(
-                      child: Center(
-                        child: Container(
-                          constraints: const BoxConstraints(maxHeight: 500),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              LeftView(),
-                              CenterView(),
-                              RightView(),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  )),
+          child: Scaffold(
+            body: SafeArea(
+              child: Center(
+                child: LayoutBuilder(
+                    builder: (context, constraints) => Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const LeftView(),
+                            CenterView(constraints),
+                            const RightView(),
+                          ],
+                        )),
+              ),
+            ),
+          ),
         ),
       );
 }
@@ -92,10 +92,13 @@ class LeftView extends StatelessWidget {
 }
 
 class CenterView extends StatelessWidget {
-  const CenterView({Key? key}) : super(key: key);
+  final BoxConstraints constraints;
+
+  const CenterView(this.constraints, {Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => const PanelView(child: BoardView());
+  Widget build(BuildContext context) =>
+      PanelView(child: BoardView(constraints));
 }
 
 class RightView extends StatelessWidget {
@@ -124,73 +127,103 @@ class RightView extends StatelessWidget {
   }
 }
 
-class BoardView extends StatelessWidget {
-  static const _thickness = 1.0;
+class BoardView extends StatefulWidget {
+  final BoxConstraints constraints;
 
-  const BoardView({super.key});
+  const BoardView(this.constraints, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final tiles = context.watch<Board>().getTiles();
-    final dividerColor = Theme.of(context).dividerColor;
+  State<BoardView> createState() => _BoardViewState();
+}
 
-    return Container(
-      decoration: BoxDecoration(
-        color: dividerColor,
-        border: Border.all(color: dividerColor, width: _thickness),
-        borderRadius: const BorderRadius.all(Radius.circular(_thickness)),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final halfHeight = constraints.maxHeight / 2;
-          final tileDimension = constraints.maxWidth < halfHeight
-              ? (constraints.maxWidth ~/ Board.x - _thickness)
-              : (halfHeight ~/ Board.x - _thickness);
-          final width = tileDimension * Board.x + _thickness * Board.x;
-          final height = tileDimension * Board.y + _thickness * Board.y;
-          final gridSize = Size(width, height);
-          return SizedBox.fromSize(
-            size: gridSize,
-            child: Center(
-              child: Wrap(
-                spacing: _thickness,
-                runSpacing: _thickness,
-                direction: Axis.horizontal,
-                children: tiles.map((e) {
-                  BoxDecoration decoration;
-                  switch (e) {
-                    case Tile.blank:
-                      decoration = const BoxDecoration(color: Colors.black);
-                      break;
-                    case Tile.blocked:
-                      decoration = const BoxDecoration(color: Colors.grey);
-                      break;
-                    case Tile.piece:
-                      final color = context.read<Board>().currentPiece.color;
-                      decoration = BoxDecoration(color: color);
-                      break;
-                    case Tile.ghost:
-                      decoration = BoxDecoration(
-                        color: Colors.black,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: _thickness,
-                        ),
-                      );
-                      break;
-                  }
-                  return Container(
-                      height: tileDimension,
-                      width: tileDimension,
-                      decoration: decoration);
-                }).toList(),
-              ),
-            ),
-          );
-        },
+class _BoardViewState extends State<BoardView> with TickerProviderStateMixin {
+  static const _divider = 1.0;
+  late List<AnimationController> _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = List.generate(
+      Board.x * Board.y,
+      (index) => AnimationController(
+        value: 1,
+        duration: const Duration(milliseconds: 1000),
+        vsync: this,
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final tileDimension = voodooTileDimension();
+    final width = tileDimension * Board.x + _divider * Board.x;
+    final height = tileDimension * Board.y + _divider * Board.y;
+    final gridSize = Size(width, height);
+
+    final tiles = context.watch<Board>().getTiles();
+    final gridItems = <Widget>[];
+    for (var index = 0; index < tiles.length; index++) {
+      BoxDecoration decoration;
+      switch (tiles[index]) {
+        case Tile.blank:
+          decoration = const BoxDecoration(color: Colors.black);
+          break;
+        case Tile.blocked:
+          decoration = const BoxDecoration(color: Colors.grey);
+          break;
+        case Tile.piece:
+          final color = context.read<Board>().currentPiece.color;
+          decoration = BoxDecoration(color: color);
+          break;
+        case Tile.ghost:
+          decoration = BoxDecoration(
+            color: Colors.black,
+            border: Border.all(
+              color: Colors.white,
+              width: _divider,
+            ),
+          );
+          break;
+      }
+      final item = FadeTransition(
+        opacity: CurvedAnimation(
+          parent: _animationController[index],
+          curve: Curves.easeIn,
+        ),
+        child: Container(
+            height: tileDimension,
+            width: tileDimension,
+            decoration: decoration),
+      );
+      gridItems.add(
+        Container(
+          color: Colors.black,
+          child: item,
+        ),
+      );
+    }
+    return SizedBox.fromSize(
+      size: gridSize,
+      child: Center(
+        child: Wrap(
+          spacing: _divider,
+          runSpacing: _divider,
+          direction: Axis.horizontal,
+          children: gridItems,
+        ),
+      ),
+    );
+  }
+
+  double voodooTileDimension() =>
+      ([
+                widget.constraints.maxWidth,
+                widget.constraints.maxHeight,
+              ].reduce(min) -
+              2 * Theme.of(context).dividerTheme.thickness!) /
+          (Board.y / Board.x) /
+          Board.x -
+      _divider;
 }
 
 class PieceView extends StatelessWidget {
@@ -227,8 +260,6 @@ class PieceView extends StatelessWidget {
 }
 
 class PanelView extends StatelessWidget {
-  static const _thickness = 10.0;
-
   final Widget child;
 
   final bool topLeft;
@@ -251,12 +282,13 @@ class PanelView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dividerColor = Theme.of(context).dividerColor;
-    const radius = Radius.circular(_thickness);
+    final thickness = Theme.of(context).dividerTheme.thickness!;
+    final radius = Radius.circular(thickness);
     return Container(
       constraints: const BoxConstraints(minWidth: 60),
       decoration: BoxDecoration(
           color: dividerColor,
-          border: Border.all(color: dividerColor, width: _thickness),
+          border: Border.all(color: dividerColor, width: thickness),
           borderRadius: BorderRadius.only(
             topLeft: topLeft ? radius : Radius.zero,
             bottomLeft: bottomLeft ? radius : Radius.zero,
