@@ -127,35 +127,16 @@ class RightView extends StatelessWidget {
   }
 }
 
-class BoardView extends StatefulWidget {
+class BoardView extends StatelessWidget {
   final BoxConstraints constraints;
 
   const BoardView(this.constraints, {super.key});
 
-  @override
-  State<BoardView> createState() => _BoardViewState();
-}
-
-class _BoardViewState extends State<BoardView> with TickerProviderStateMixin {
   static const _divider = 1.0;
-  late List<AnimationController> _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = List.generate(
-      Board.x * Board.y,
-      (index) => AnimationController(
-        value: 1,
-        duration: const Duration(milliseconds: 1000),
-        vsync: this,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    final tileDimension = voodooTileDimension();
+    final tileDimension = voodooTileDimension(context);
     final width = tileDimension * Board.x + _divider * Board.x;
     final height = tileDimension * Board.y + _divider * Board.y;
     final gridSize = Size(width, height);
@@ -187,7 +168,7 @@ class _BoardViewState extends State<BoardView> with TickerProviderStateMixin {
       }
       final item = FadeTransition(
         opacity: CurvedAnimation(
-          parent: _animationController[index],
+          parent: context.read<Board>().animationController[index],
           curve: Curves.easeIn,
         ),
         child: Container(
@@ -215,10 +196,10 @@ class _BoardViewState extends State<BoardView> with TickerProviderStateMixin {
     );
   }
 
-  double voodooTileDimension() =>
+  double voodooTileDimension(BuildContext context) =>
       ([
-                widget.constraints.maxWidth,
-                widget.constraints.maxHeight,
+                constraints.maxWidth,
+                constraints.maxHeight,
               ].reduce(min) -
               2 * Theme.of(context).dividerTheme.thickness!) /
           (Board.y / Board.x) /
