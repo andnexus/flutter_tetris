@@ -9,8 +9,10 @@ import 'package:tetris/game/vector.dart';
 
 class Board extends ChangeNotifier {
   static const Duration lockDelayTime = Duration(seconds: 1);
+  static const Duration animationTime = Duration(milliseconds: 600);
   static const int x = 10;
   static const int y = 2 * x;
+  static const bool isAnimationEnabled = true;
 
   Ticker? _ticker;
   int lastMovedTime = 0;
@@ -33,10 +35,19 @@ class Board extends ChangeNotifier {
 
   int get clearedLines => _clearedLines;
 
+  List<AnimationController> animationController;
+
   Board(TickerProvider tickerProvider)
       : currentPiece = Piece.empty(),
         _blocked = [],
-        _cursor = Vector.zero {
+        _cursor = Vector.zero,
+        animationController = isAnimationEnabled
+            ? List.generate(
+                x * y,
+                (index) => AnimationController(
+                    duration: animationTime, vsync: tickerProvider),
+              )
+            : [] {
     _ticker = tickerProvider.createTicker(onTick);
     _ticker?.start();
     startGame();
@@ -163,12 +174,31 @@ class Board extends ChangeNotifier {
             .map((e) => e + const Vector(0, -1));
         blocked = [...belowVectors, ...aboveVectors];
         debugPrint('Cleared row $yp');
+        if (isAnimationEnabled) {
+          for (var x = 0; x < Board.x; x++) {
+            final index = (Board.y - yp - 1) * Board.x + x;
+            animationController[index]
+              ..forward()
+              ..addStatusListener((status) {
+                if (status == AnimationStatus.dismissed ||
+                    status == AnimationStatus.completed) {
+                  _blocked
+                    ..clear()
+                    ..addAll(blocked);
+                  _notify();
+                  animationController[index].reset();
+                }
+              });
+          }
+        }
       }
     }
+    if (!isAnimationEnabled) {
+      _blocked
+        ..clear()
+        ..addAll(blocked);
+    }
     _clearedLines += clearedRows;
-    _blocked
-      ..clear()
-      ..addAll(blocked);
   }
 
   void hold() {
